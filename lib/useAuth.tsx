@@ -9,6 +9,7 @@ interface User {
   email: string;
   name?: string;
   visitorId?: string;
+  role?: string;
   createdAt: number;
   lastActiveAt: number;
   settings: {
