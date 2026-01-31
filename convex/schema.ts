@@ -9,6 +9,19 @@ export default defineSchema({
     passwordHash: v.string(), // Simple hash for demo (use proper auth in production)
     name: v.optional(v.string()),
     
+    // Role and status
+    role: v.optional(v.string()), // 'admin' | 'moderator' | 'user' | undefined (default user)
+    isBanned: v.optional(v.boolean()), // If true, user cannot access the app
+    bannedAt: v.optional(v.number()),
+    bannedReason: v.optional(v.string()),
+    
+    // Timeout fields (temporary mute from forum)
+    isTimedOut: v.optional(v.boolean()),
+    timeoutUntil: v.optional(v.number()), // Timestamp when timeout expires (null = lifetime)
+    timeoutReason: v.optional(v.string()),
+    timedOutAt: v.optional(v.number()),
+    timedOutBy: v.optional(v.string()), // Email of admin/mod who issued timeout
+    
     // Legacy support for anonymous users migration
     visitorId: v.optional(v.string()),
     

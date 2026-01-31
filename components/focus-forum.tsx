@@ -3,10 +3,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
+import { Id } from '@/convex/_generated/dataModel';
 import { useAuth, useUserIdentifier } from '@/lib/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Send, MessageCircle, X, Flame, ArrowLeft } from 'lucide-react';
+import { Send, MessageCircle, X, Flame, ArrowLeft, Trash2, Timer, ShieldCheck, Crown, AlertCircle, UserPlus } from 'lucide-react';
 
 // Generate avatar color from username
 function getAvatarColor(name: string): string {
@@ -42,10 +43,25 @@ export function FocusForum({ onClose }: FocusForumProps) {
   const userIdentifier = useUserIdentifier();
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [makingModEmail, setMakingModEmail] = useState<string | null>(null);
+  const [selectedMessage, setSelectedMessage] = useState<string | null>(null);
+  const [showTimeoutModal, setShowTimeoutModal] = useState<{ email: string; name: string } | null>(null);
+  const [timeoutReason, setTimeoutReason] = useState('');
+  const [sendError, setSendError] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const messages = useQuery(api.forum.getMessages, { limit: 30 });
   const sendMessageMutation = useMutation(api.forum.sendMessage);
+  const deleteMessageMutation = useMutation(api.admin.deleteMessage);
+  const timeoutUserMutation = useMutation(api.admin.timeoutUser);
+  const makeModeratorMutation = useMutation(api.admin.makeModerator);
+  
+  // Check if current user is admin or moderator
+  const modStatus = useQuery(api.admin.checkModeratorStatus, 
+    user?.email ? { email: user.email } : "skip"
+  );
+  const isAdminOrMod = modStatus?.isAdmin || modStatus?.isModerator;
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -59,17 +75,88 @@ export function FocusForum({ onClose }: FocusForumProps) {
     if (!message.trim() || isSending || !userIdentifier) return;
 
     setIsSending(true);
+    setSendError(null);
     try {
       await sendMessageMutation({
         ...userIdentifier,
         message: message.trim(),
       });
       setMessage('');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to send message:', error);
+      setSendError(parseErrorMessage(error.message || 'Failed to send message'));
     } finally {
       setIsSending(false);
     }
+  };
+
+  const handleDeleteMessage = async (messageId: string) => {
+    if (!user?.email || !isAdminOrMod) return;
+    setDeletingId(messageId);
+    try {
+      await deleteMessageMutation({
+        moderatorEmail: user.email,
+        messageId: messageId as Id<"forumMessages">,
+      });
+      setSelectedMessage(null);
+    } catch (error) {
+      console.error('Failed to delete message:', error);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handleTimeoutUser = async (duration?: number) => {
+    if (!user?.email || !showTimeoutModal) return;
+    try {
+      await timeoutUserMutation({
+        moderatorEmail: user.email,
+        userEmail: showTimeoutModal.email,
+        durationMinutes: duration,
+        reason: timeoutReason || 'Forum violation',
+      });
+      setShowTimeoutModal(null);
+      setTimeoutReason('');
+    } catch (error: any) {
+      console.error('Failed to timeout user:', error);
+    }
+  };
+
+  const handleMakeModerator = async (email: string) => {
+    if (!user?.email || !modStatus?.isAdmin) return;
+    setMakingModEmail(email);
+    try {
+      await makeModeratorMutation({
+        adminEmail: user.email,
+        userEmail: email,
+      });
+      setSelectedMessage(null);
+    } catch (error: any) {
+      console.error('Failed to make moderator:', error);
+    } finally {
+      setMakingModEmail(null);
+    }
+  };
+
+  // Parse clean error messages from Convex errors
+  const parseErrorMessage = (error: string): string => {
+    // Remove Convex error prefix if present
+    let msg = error.replace(/^Uncaught Error:\s*/i, '').trim();
+    
+    // Clean up common error patterns
+    if (msg.toLowerCase().includes('you are banned')) {
+      const reason = msg.split(':')[1]?.trim();
+      return reason ? `Banned: ${reason}` : 'Your account has been banned';
+    }
+    if (msg.toLowerCase().includes('you are timed out')) {
+      const match = msg.match(/timed out for (\d+ minute\(s\)|permanently)/i);
+      if (match) {
+        return `Timed out ${match[1]}. Please wait before sending messages.`;
+      }
+      return 'You are temporarily timed out from chat';
+    }
+    
+    return msg || 'Failed to send message';
   };
 
   return (
@@ -102,6 +189,7 @@ export function FocusForum({ onClose }: FocusForumProps) {
             messages.map((msg) => {
               const isOwnMessage = user?.email === msg.userEmail;
               const avatarColor = getAvatarColor(msg.userName);
+              const isSelected = selectedMessage === msg._id;
               
               return (
                 <div
@@ -117,6 +205,19 @@ export function FocusForum({ onClose }: FocusForumProps) {
                   <div className={`max-w-[70%] ${isOwnMessage ? 'text-right' : ''}`}>
                     <div className={`flex items-center gap-2 mb-1 ${isOwnMessage ? 'justify-end' : ''}`}>
                       <span className="text-white text-sm font-medium drop-shadow-sm">{msg.userName}</span>
+                      {/* Admin/Mod badges */}
+                      {msg.userRole === 'admin' && (
+                        <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-purple-500/30 text-purple-300 text-[10px]">
+                          <Crown className="h-2.5 w-2.5" />
+                          Admin
+                        </span>
+                      )}
+                      {msg.userRole === 'moderator' && (
+                        <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-cyan-500/30 text-cyan-300 text-[10px]">
+                          <ShieldCheck className="h-2.5 w-2.5" />
+                          Mod
+                        </span>
+                      )}
                       {msg.userStreak && msg.userStreak > 0 && (
                         <span className="text-orange-400 text-xs flex items-center gap-0.5 drop-shadow-sm">
                           <Flame className="h-3 w-3" />
@@ -124,11 +225,50 @@ export function FocusForum({ onClose }: FocusForumProps) {
                         </span>
                       )}
                     </div>
-                    <div className={`inline-block rounded-2xl px-4 py-2.5 border border-white/20 backdrop-blur-md shadow-lg ${
-                      isOwnMessage ? 'bg-purple-500/30' : 'bg-black/40'
-                    }`}>
+                    <div 
+                      className={`inline-block rounded-2xl px-4 py-2.5 border backdrop-blur-md shadow-lg cursor-pointer transition-all ${
+                        isOwnMessage ? 'bg-purple-500/30' : 'bg-black/40'
+                      } ${isSelected ? 'border-red-500/50 ring-2 ring-red-500/30' : 'border-white/20'}`}
+                      onClick={() => isAdminOrMod && setSelectedMessage(isSelected ? null : msg._id)}
+                    >
                       <p className="text-white text-sm leading-relaxed">{msg.message}</p>
                     </div>
+                    
+                    {/* Mod actions when message selected */}
+                    {isSelected && isAdminOrMod && (
+                      <div className={`flex items-center gap-2 mt-2 flex-wrap ${isOwnMessage ? 'justify-end' : ''}`}>
+                        <button
+                          onClick={() => handleDeleteMessage(msg._id)}
+                          disabled={deletingId === msg._id}
+                          className="flex items-center gap-1 px-2 py-1 rounded-lg bg-red-500/20 text-red-400 text-xs hover:bg-red-500/30 transition-colors disabled:opacity-50"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                          {deletingId === msg._id ? 'Deleting...' : 'Delete'}
+                        </button>
+                        {msg.userEmail && msg.userEmail !== user?.email && (
+                          <>
+                            <button
+                              onClick={() => setShowTimeoutModal({ email: msg.userEmail!, name: msg.userName })}
+                              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-orange-500/20 text-orange-400 text-xs hover:bg-orange-500/30 transition-colors"
+                            >
+                              <Timer className="h-3 w-3" />
+                              Timeout
+                            </button>
+                            {/* Only admins can make moderators */}
+                            {modStatus?.isAdmin && (
+                              <button
+                                onClick={() => handleMakeModerator(msg.userEmail!)}
+                                disabled={makingModEmail === msg.userEmail}
+                                className="flex items-center gap-1 px-2 py-1 rounded-lg bg-cyan-500/20 text-cyan-400 text-xs hover:bg-cyan-500/30 transition-colors disabled:opacity-50"
+                              >
+                                <UserPlus className="h-3 w-3" />
+                                {makingModEmail === msg.userEmail ? 'Making...' : 'Make Mod'}
+                              </button>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               );
@@ -139,6 +279,33 @@ export function FocusForum({ onClose }: FocusForumProps) {
 
       {/* Input area */}
       <div className="px-6 py-3 shrink-0">
+        {/* Error message */}
+        {sendError && (
+          <div className="flex items-center gap-2 px-3 py-2 mb-2 rounded-lg bg-red-500/20 border border-red-500/30 text-red-300 text-xs">
+            <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+            <span>{sendError}</span>
+            <button onClick={() => setSendError(null)} className="ml-auto text-red-400 hover:text-red-300">
+              <X className="h-3 w-3" />
+            </button>
+          </div>
+        )}
+        
+        {/* Mod indicator */}
+        {isAdminOrMod && (
+          <div className="flex items-center gap-1.5 mb-2 text-xs">
+            {modStatus?.isAdmin ? (
+              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300">
+                <Crown className="h-3 w-3" /> Admin Mode
+              </span>
+            ) : (
+              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300">
+                <ShieldCheck className="h-3 w-3" /> Mod Mode
+              </span>
+            )}
+            <span className="text-white/30">Click messages to moderate</span>
+          </div>
+        )}
+        
         {!isAuthenticated && (
           <p className="text-amber-400/50 text-xs mb-2 text-center">
             Sign in to chat with your identity
@@ -163,6 +330,67 @@ export function FocusForum({ onClose }: FocusForumProps) {
           </Button>
         </form>
       </div>
+
+      {/* Timeout Modal */}
+      {showTimeoutModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm">
+          <div className="w-full max-w-sm p-5 rounded-xl bg-slate-900/95 border border-white/10 shadow-2xl mx-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 rounded-lg bg-orange-500/20">
+                <Timer className="h-5 w-5 text-orange-400" />
+              </div>
+              <div>
+                <h3 className="font-bold text-white text-sm">Timeout User</h3>
+                <p className="text-xs text-white/50">{showTimeoutModal.name}</p>
+              </div>
+            </div>
+            
+            <Input
+              value={timeoutReason}
+              onChange={(e) => setTimeoutReason(e.target.value)}
+              placeholder="Reason (optional)..."
+              className="mb-3 text-sm bg-white/5 border-white/10 text-white placeholder:text-white/40"
+            />
+            
+            <div className="grid grid-cols-3 gap-2 mb-3">
+              <button
+                onClick={() => handleTimeoutUser(10)}
+                className="px-3 py-2 rounded-lg bg-orange-500/20 text-orange-300 text-xs font-medium hover:bg-orange-500/30 transition-colors border border-orange-500/30"
+              >
+                10 min
+              </button>
+              <button
+                onClick={() => handleTimeoutUser(20)}
+                className="px-3 py-2 rounded-lg bg-orange-500/20 text-orange-300 text-xs font-medium hover:bg-orange-500/30 transition-colors border border-orange-500/30"
+              >
+                20 min
+              </button>
+              <button
+                onClick={() => handleTimeoutUser(30)}
+                className="px-3 py-2 rounded-lg bg-orange-500/20 text-orange-300 text-xs font-medium hover:bg-orange-500/30 transition-colors border border-orange-500/30"
+              >
+                30 min
+              </button>
+            </div>
+            
+            {modStatus?.isAdmin && (
+              <button
+                onClick={() => handleTimeoutUser(undefined)}
+                className="w-full px-3 py-2 rounded-lg bg-red-500/20 text-red-300 text-xs font-medium hover:bg-red-500/30 transition-colors border border-red-500/30 mb-3"
+              >
+                ⚠️ Lifetime Timeout
+              </button>
+            )}
+            
+            <button
+              onClick={() => { setShowTimeoutModal(null); setTimeoutReason(''); }}
+              className="w-full px-3 py-2 rounded-lg bg-white/5 text-white/60 text-xs hover:bg-white/10 transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

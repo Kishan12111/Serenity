@@ -331,7 +331,7 @@ The entire app operates in dark mode:
 ## Summary
 
 Serenity combines:
-- **Beautiful Visual Design**: AI-generated anime backgrounds
+- **Beautiful Visual Design**: Curated anime-style backgrounds
 - **Elegant Components**: Glassmorphism with gradients
 - **Smooth Interactions**: Purposeful animations
 - **Complete Accessibility**: Keyboard & screen reader support

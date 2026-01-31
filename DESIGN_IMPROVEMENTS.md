@@ -5,10 +5,10 @@ This document outlines all the major improvements made to create a more beautifu
 
 ---
 
-## 1. AI-Generated Anime Backgrounds 🎨
+## 1. Anime-Style Backgrounds 🎨
 
 ### New Wallpaper Scenes
-We've added **9 beautiful AI-generated anime-style backgrounds** replacing generic gradients:
+We've added **9 beautiful anime-style backgrounds** replacing generic gradients:
 
 1. **🌧️ Rainy Night** - Cozy rainy cityscape with neon reflections
 2. **🏔️ Mountain Sunset** - Serene mountain landscape at golden hour
@@ -215,7 +215,7 @@ We've added **9 beautiful AI-generated anime-style backgrounds** replacing gener
 
 | Aspect | Before | After |
 |--------|--------|-------|
-| Backgrounds | Plain CSS gradients | 9 AI-generated anime images |
+| Backgrounds | Plain CSS gradients | 9 curated anime-style images |
 | Timer Design | Simple circle with basic styling | Gradient rings, SVG progress, breathing animations |
 | Duration Selection | Fixed pomodoro presets only | Custom input + 5 quick presets |
 | Streak Display | Text in stats page | Prominent emoji-based component with fire icon |

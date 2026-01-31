@@ -11,10 +11,11 @@ import { SettingsPanel } from '@/components/settings-panel';
 import { SessionNotification } from '@/components/session-notification';
 import { StreakIndicator } from '@/components/streak-indicator';
 import { FocusForum, FloatingChatBubble, MiniChatPanel, FloatingMessages } from '@/components/focus-forum';
+import { AdminPanel, AdminButton } from '@/components/admin-panel';
 import { recordSession, getTodayStats } from '@/components/stats-tracker';
 import { useAuth } from '@/lib/useAuth';
 import { Button } from '@/components/ui/button';
-import { Clock, BarChart3, Settings, Image, X, User, LogOut, LogIn, WifiOff, MessageCircle } from 'lucide-react';
+import { Clock, BarChart3, Settings, Image, X, User, LogOut, LogIn, WifiOff, MessageCircle, Shield } from 'lucide-react';
 import { useConvexStats } from '@/lib/useConvexStats';
 
 type Page = 'focus' | 'stats' | 'settings' | 'forum';
@@ -49,6 +50,7 @@ export default function Home() {
   const [currentQuote, setCurrentQuote] = useState('');
   const [superFocusMode, setSuperFocusMode] = useState(false);
   const [showMiniChat, setShowMiniChat] = useState(false);
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [lastSeenMessageTime, setLastSeenMessageTime] = useState<number>(Date.now());
   const [pomodoroSettings, setPomodoroSettings] = useState({
     focusTime: 25,
@@ -317,6 +319,23 @@ export default function Home() {
                               <span className="text-white font-medium">{user?.lifetimeTotals?.totalSessions || 0}</span>
                             </div>
                           </div>
+                          
+                          {/* Admin Panel Button */}
+                          {user?.role === 'admin' && (
+                            <Button
+                              onClick={() => {
+                                setShowUserMenu(false);
+                                setShowAdminPanel(true);
+                              }}
+                              variant="ghost"
+                              size="sm"
+                              className="w-full mt-3 text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 border border-purple-500/20"
+                            >
+                              <Shield className="h-4 w-4 mr-2" />
+                              Admin Dashboard
+                            </Button>
+                          )}
+                          
                           <Button
                             onClick={() => {
                               setShowUserMenu(false);
@@ -324,7 +343,7 @@ export default function Home() {
                             }}
                             variant="ghost"
                             size="sm"
-                            className="w-full mt-4 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                            className="w-full mt-2 text-red-400 hover:text-red-300 hover:bg-red-500/10"
                           >
                             <LogOut className="h-4 w-4 mr-2" />
                             Sign Out
@@ -570,6 +589,14 @@ export default function Home() {
           </footer>
         )}
       </div>
+
+      {/* Admin Panel Modal */}
+      {showAdminPanel && user?.email && (
+        <AdminPanel
+          adminEmail={user.email}
+          onClose={() => setShowAdminPanel(false)}
+        />
+      )}
     </div>
   );
 }

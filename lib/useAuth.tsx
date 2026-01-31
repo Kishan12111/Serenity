@@ -121,7 +121,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       return { success: false, error: "Sign up failed" };
     } catch (error: any) {
-      return { success: false, error: error.message || "Sign up failed" };
+      // Clean up error messages for better UX
+      const rawError = error.message || "Sign up failed";
+      let cleanError = rawError.replace(/^Uncaught Error:\s*/i, '').trim();
+      
+      // Format specific error types
+      if (cleanError.toLowerCase().includes('already exists')) {
+        cleanError = 'An account with this email already exists';
+      }
+      
+      return { success: false, error: cleanError };
     } finally {
       setIsLoading(false);
     }
@@ -142,7 +151,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       return { success: false, error: "Sign in failed" };
     } catch (error: any) {
-      return { success: false, error: error.message || "Invalid email or password" };
+      // Clean up error messages for better UX
+      const rawError = error.message || "Invalid email or password";
+      let cleanError = rawError.replace(/^Uncaught Error:\s*/i, '').trim();
+      
+      // Format specific error types
+      if (cleanError.toLowerCase().includes('banned')) {
+        const reason = cleanError.split(':')[1]?.trim();
+        cleanError = reason ? `Account banned: ${reason}` : 'Your account has been banned. Contact support for help.';
+      } else if (cleanError.toLowerCase().includes('invalid email') || cleanError.toLowerCase().includes('invalid password')) {
+        cleanError = 'Invalid email or password';
+      }
+      
+      return { success: false, error: cleanError };
     } finally {
       setIsLoading(false);
     }

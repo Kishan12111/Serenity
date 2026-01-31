@@ -17,8 +17,28 @@ export const getMessages = query({
       .order("desc")
       .take(limit);
     
+    // Enrich messages with user role info
+    const enrichedMessages = await Promise.all(
+      messages.map(async (msg) => {
+        let userRole: string | undefined = undefined;
+        
+        if (msg.userEmail) {
+          const user = await ctx.db
+            .query("users")
+            .withIndex("by_email", (q) => q.eq("email", msg.userEmail!.toLowerCase()))
+            .first();
+          userRole = user?.role;
+        }
+        
+        return {
+          ...msg,
+          userRole,
+        };
+      })
+    );
+    
     // Return in chronological order (oldest first)
-    return messages.reverse();
+    return enrichedMessages.reverse();
   },
 });
 
@@ -44,6 +64,31 @@ export const sendMessage = mutation({
         .query("users")
         .withIndex("by_visitorId", (q) => q.eq("visitorId", args.visitorId))
         .first();
+    }
+
+    // Check if user is banned
+    if (user?.isBanned) {
+      throw new Error(`You are banned: ${user.bannedReason || "Violated community guidelines"}`);
+    }
+
+    // Check if user is timed out
+    if (user?.isTimedOut) {
+      if (user.timeoutUntil && Date.now() > user.timeoutUntil) {
+        // Timeout expired, clear it
+        await ctx.db.patch(user._id, {
+          isTimedOut: false,
+          timeoutUntil: undefined,
+          timeoutReason: undefined,
+          timedOutAt: undefined,
+          timedOutBy: undefined,
+        });
+      } else {
+        const remaining = user.timeoutUntil 
+          ? Math.ceil((user.timeoutUntil - Date.now()) / 60000)
+          : null;
+        const timeText = remaining ? `${remaining} minute(s)` : "permanently";
+        throw new Error(`You are timed out for ${timeText}: ${user.timeoutReason || "Chat violation"}`);
+      }
     }
 
     const userName = user?.name || user?.email?.split("@")[0] || "Anonymous";

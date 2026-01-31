@@ -124,6 +124,11 @@ export const signIn = mutation({
       throw new Error("Invalid email or password");
     }
 
+    // Check if user is banned
+    if (user.isBanned) {
+      throw new Error(`Account banned: ${user.bannedReason || "Contact support for more information"}`);
+    }
+
     if (!verifyPassword(args.password, user.passwordHash)) {
       throw new Error("Invalid email or password");
     }
