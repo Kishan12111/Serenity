@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="wall" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1c2331"/>
+      <stop offset="100%" stop-color="#101624"/>
+    </linearGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#wall)"/>
+  <rect y="680" width="1920" height="400" fill="#0c111d"/>
+  <rect x="280" y="220" width="1360" height="280" fill="#0f1727" stroke="#24314d" stroke-width="10"/>
+  <rect x="320" y="260" width="1280" height="200" fill="#111c2e" stroke="#2b3b5a" stroke-width="6"/>
+  <rect x="340" y="280" width="1240" height="160" fill="#0d1727"/>
+  <rect x="600" y="470" width="720" height="26" fill="#2e3f60"/>
+  <rect x="360" y="520" width="1200" height="40" fill="#2b3b5a"/>
+  <rect x="320" y="560" width="1280" height="16" fill="#1f2c45"/>
+  <rect x="480" y="600" width="960" height="16" fill="#1f2c45"/>
+  <rect x="0" y="660" width="1920" height="20" fill="#2b3b5a"/>
+  <rect x="0" y="680" width="1920" height="20" fill="#222f49" opacity="0.8"/>
+  <g fill="#f7e7c5">
+    <rect x="960" y="620" width="240" height="60" rx="12"/>
+    <rect x="1240" y="620" width="220" height="60" rx="12"/>
+  </g>
+  <g fill="#f9f3e4">
+    <rect x="720" y="620" width="200" height="60" rx="12"/>
+    <rect x="520" y="620" width="160" height="60" rx="12"/>
+  </g>
+  <rect x="840" y="350" width="240" height="60" rx="12" fill="#2dd4bf" opacity="0.18"/>
+  <rect x="880" y="370" width="160" height="20" rx="6" fill="#34d399" opacity="0.4"/>
+  <rect x="920" y="330" width="80" height="10" rx="5" fill="#fcd34d" opacity="0.5"/>
+  <rect x="1260" y="300" width="80" height="28" rx="6" fill="#38bdf8" opacity="0.35"/>
+  <rect x="580" y="320" width="110" height="26" rx="6" fill="#fb7185" opacity="0.35"/>
+</svg>

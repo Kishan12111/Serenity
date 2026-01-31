@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="dusk" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#c7d2fe"/>
+    </linearGradient>
+    <radialGradient id="ripples" cx="50%" cy="70%" r="60%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.6)"/>
+      <stop offset="100%" stop-color="rgba(199,210,254,0.2)"/>
+    </radialGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#dusk)"/>
+  <rect y="640" width="1920" height="440" fill="#e0e7ff"/>
+  <circle cx="960" cy="760" r="520" fill="url(#ripples)" opacity="0.6"/>
+  <circle cx="340" cy="360" r="40" fill="#fcd34d" opacity="0.7"/>
+  <g fill="#cbd5e1" opacity="0.75">
+    <ellipse cx="520" cy="760" rx="160" ry="46"/>
+    <ellipse cx="940" cy="820" rx="200" ry="56"/>
+    <ellipse cx="1360" cy="760" rx="180" ry="50"/>
+  </g>
+  <g fill="#9ca3af">
+    <ellipse cx="520" cy="720" rx="90" ry="26"/>
+    <ellipse cx="940" cy="780" rx="110" ry="30"/>
+    <ellipse cx="1360" cy="720" rx="100" ry="28"/>
+  </g>
+  <g fill="#334155" opacity="0.65">
+    <rect x="480" y="540" width="16" height="160" rx="6"/>
+    <rect x="900" y="560" width="16" height="160" rx="6"/>
+    <rect x="1320" y="520" width="16" height="180" rx="6"/>
+  </g>
+  <g fill="#6b7280" opacity="0.65">
+    <circle cx="480" cy="520" r="26"/>
+    <circle cx="900" cy="540" r="26"/>
+    <circle cx="1320" cy="500" r="26"/>
+  </g>
+  <g fill="#94a3b8" opacity="0.55">
+    <rect x="300" y="680" width="120" height="18" rx="9"/>
+    <rect x="1480" y="700" width="120" height="18" rx="9"/>
+    <rect x="1120" y="700" width="120" height="18" rx="9"/>
+  </g>
+</svg>

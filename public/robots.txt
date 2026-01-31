@@ -1,0 +1,15 @@
+# Serenity Focus Timer - robots.txt
+# https://serenity-focus.app
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://serenity-focus.app/sitemap.xml
+
+# Disallow API routes
+Disallow: /api/
+
+# Allow crawlers to index important pages
+Allow: /
+Allow: /auth

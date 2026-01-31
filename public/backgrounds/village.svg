@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="dawn" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fef3c7"/>
+      <stop offset="50%" stop-color="#fcd34d"/>
+      <stop offset="100%" stop-color="#c084fc"/>
+    </linearGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#dawn)"/>
+  <g fill="#9a7bdc" opacity="0.8">
+    <path d="M0 760 L220 640 L420 760 L620 620 L820 760 L1020 640 L1220 760 L1420 640 L1620 760 L1820 640 L1920 720 L1920 1080 L0 1080 Z"/>
+  </g>
+  <g fill="#fdf2c7" stroke="#f8d66c" stroke-width="6" opacity="0.9">
+    <path d="M260 620 L340 540 L420 620 Z"/>
+    <rect x="280" y="620" width="120" height="90" rx="10"/>
+    <path d="M880 600 L960 520 L1040 600 Z"/>
+    <rect x="900" y="600" width="120" height="100" rx="10"/>
+    <path d="M1440 640 L1520 560 L1600 640 Z"/>
+    <rect x="1460" y="640" width="120" height="90" rx="10"/>
+  </g>
+  <g fill="#2dd4bf" opacity="0.4">
+    <rect x="520" y="740" width="200" height="20" rx="10"/>
+    <rect x="1100" y="780" width="200" height="20" rx="10"/>
+    <rect x="760" y="820" width="220" height="20" rx="10"/>
+  </g>
+  <circle cx="320" cy="260" r="120" fill="#fff7d6" opacity="0.5"/>
+</svg>

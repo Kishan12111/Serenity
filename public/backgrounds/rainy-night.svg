@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0b1025"/>
+      <stop offset="50%" stop-color="#161b34"/>
+      <stop offset="100%" stop-color="#0a0f21"/>
+    </linearGradient>
+    <linearGradient id="horizon" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#23345d" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#1b2648" stop-opacity="0.7"/>
+    </linearGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#sky)"/>
+  <rect y="720" width="1920" height="360" fill="url(#horizon)"/>
+  <g stroke="#6ccff6" stroke-width="2" stroke-linecap="round" opacity="0.35">
+    <path d="M200 120 L210 200" />
+    <path d="M260 80 L270 170" />
+    <path d="M340 140 L350 230" />
+    <path d="M420 60 L430 160" />
+    <path d="M520 110 L530 210" />
+    <path d="M600 90 L610 190" />
+    <path d="M700 130 L710 230" />
+    <path d="M780 70 L790 170" />
+    <path d="M860 120 L870 210" />
+    <path d="M960 80 L970 180" />
+    <path d="M1040 140 L1050 240" />
+    <path d="M1140 90 L1150 190" />
+    <path d="M1240 110 L1250 210" />
+    <path d="M1340 70 L1350 170" />
+    <path d="M1420 130 L1430 230" />
+    <path d="M1520 80 L1530 180" />
+    <path d="M1620 120 L1630 220" />
+    <path d="M1720 90 L1730 190" />
+  </g>
+  <circle cx="1500" cy="220" r="90" fill="#f1f5ff" opacity="0.18"/>
+  <circle cx="1520" cy="210" r="60" fill="#f6fbff" opacity="0.25"/>
+  <g fill="#0f152c" opacity="0.8">
+    <path d="M0 820 C200 760 400 760 600 820 C800 880 1000 880 1200 820 C1400 760 1600 760 1920 820 L1920 1080 L0 1080 Z"/>
+  </g>
+</svg>

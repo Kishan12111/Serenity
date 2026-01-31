@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="forestSky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0f2b36"/>
+      <stop offset="100%" stop-color="#0b1e26"/>
+    </linearGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#forestSky)"/>
+  <rect y="620" width="1920" height="460" fill="#0a1a18" opacity="0.8"/>
+  <g fill="#0e332d" opacity="0.9">
+    <path d="M0 720 L80 520 L160 740 L260 500 L360 740 L440 520 L520 740 L600 520 L680 760 L780 520 L860 760 L940 540 L1020 760 L1100 500 L1180 760 L1260 520 L1340 760 L1420 520 L1500 740 L1580 520 L1660 760 L1740 520 L1820 740 L1920 520 L1920 1080 L0 1080 Z"/>
+  </g>
+  <g fill="#13483f" opacity="0.6">
+    <rect x="140" y="520" width="12" height="180" rx="4"/>
+    <rect x="420" y="540" width="12" height="180" rx="4"/>
+    <rect x="700" y="520" width="12" height="190" rx="4"/>
+    <rect x="980" y="530" width="12" height="180" rx="4"/>
+    <rect x="1260" y="520" width="12" height="190" rx="4"/>
+    <rect x="1540" y="530" width="12" height="180" rx="4"/>
+    <rect x="1820" y="520" width="12" height="190" rx="4"/>
+  </g>
+  <circle cx="240" cy="220" r="5" fill="#7fffd4" opacity="0.4"/>
+  <circle cx="520" cy="160" r="4" fill="#7fffd4" opacity="0.4"/>
+  <circle cx="980" cy="140" r="6" fill="#7fffd4" opacity="0.4"/>
+  <circle cx="1360" cy="200" r="5" fill="#7fffd4" opacity="0.4"/>
+</svg>

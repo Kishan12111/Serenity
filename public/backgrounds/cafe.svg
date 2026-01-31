@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="cafeWall" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2b1b1a"/>
+      <stop offset="100%" stop-color="#1a0f0f"/>
+    </linearGradient>
+    <pattern id="brick" width="60" height="30" patternUnits="userSpaceOnUse" patternTransform="translate(0,0)">
+      <rect width="60" height="30" fill="rgba(255,255,255,0.04)"/>
+      <rect x="30" y="15" width="30" height="15" fill="rgba(0,0,0,0.05)"/>
+    </pattern>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#cafeWall)"/>
+  <rect width="1920" height="760" fill="url(#brick)" opacity="0.5"/>
+  <rect y="760" width="1920" height="320" fill="#1a0f0f"/>
+  <rect y="720" width="1920" height="10" fill="#3a241f"/>
+  <rect y="730" width="1920" height="30" fill="#2d1b17"/>
+  <g fill="#f6d4a5" opacity="0.85">
+    <rect x="240" y="200" width="260" height="200" rx="24"/>
+    <rect x="1420" y="220" width="260" height="200" rx="24"/>
+  </g>
+  <g fill="rgba(0,0,0,0.45)">
+    <rect x="240" y="200" width="260" height="200" rx="24"/>
+    <rect x="1420" y="220" width="260" height="200" rx="24"/>
+  </g>
+  <g fill="#fef4dd">
+    <circle cx="370" cy="230" r="10"/>
+    <circle cx="1550" cy="250" r="10"/>
+    <path d="M360 360 Q370 380 380 360" stroke="#fef4dd" stroke-width="8" stroke-linecap="round" fill="none"/>
+    <path d="M1540 380 Q1550 400 1560 380" stroke="#fef4dd" stroke-width="8" stroke-linecap="round" fill="none"/>
+  </g>
+  <rect x="620" y="640" width="680" height="40" rx="10" fill="#c2945c"/>
+  <rect x="560" y="680" width="800" height="20" rx="8" fill="#b1834b"/>
+  <rect x="520" y="700" width="880" height="12" rx="6" fill="#a06f3c"/>
+  <g fill="#e9c89a" opacity="0.9">
+    <rect x="700" y="590" width="40" height="50" rx="8"/>
+    <rect x="1180" y="590" width="40" height="50" rx="8"/>
+    <circle cx="820" cy="600" r="26"/>
+    <circle cx="1060" cy="600" r="22"/>
+  </g>
+</svg>
