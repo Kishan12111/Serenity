@@ -11,7 +11,7 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 // Comprehensive SEO metadata
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://serenity-mauve.vercel.app'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://www.serinityfocus.app'),
   title: {
     default: 'Serenity - Free Pomodoro Timer with Beautiful Stats | Anime Focus App',
     template: '%s | Serenity Focus Timer',
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://serenity-mauve.vercel.app',
+    url: 'https://www.serinityfocus.app',
     siteName: 'Serenity - Focus Companion',
     title: 'Serenity - The First Free Pomodoro Timer with Beautiful Focus Statistics',
     description: 'Transform your study sessions with anime-inspired aesthetics. Free forever: track focus time, build streaks, sync across devices. The only Pomodoro app that makes productivity beautiful.',
@@ -114,7 +114,7 @@ export const metadata: Metadata = {
   
   // Alternates for internationalization
   alternates: {
-    canonical: 'https://serenity-mauve.vercel.app',
+    canonical: 'https://www.serinityfocus.app',
   },
   
   // Other metadata

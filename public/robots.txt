@@ -1,11 +1,11 @@
 # Serenity Focus Timer - robots.txt
-# https://serenity-mauve.vercel.app
+# https://www.serinityfocus.app
 
 User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://serenity-mauve.vercel.app/sitemap.xml
+Sitemap: https://www.serinityfocus.app/sitemap.xml
 
 # Disallow API routes
 Disallow: /api/
