@@ -127,7 +127,29 @@ export default function AuthPage() {
           <div className="max-w-md">
             {/* Logo */}
             <div className="flex items-center gap-3 mb-8">
-              <span className="text-4xl">✨</span>
+              <div className="w-12 h-12 relative">
+                <svg viewBox="0 0 32 32" className="w-full h-full">
+                  <defs>
+                    <linearGradient id="authAccent" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#a855f7"/>
+                      <stop offset="100%" stopColor="#ec4899"/>
+                    </linearGradient>
+                    <linearGradient id="authGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#c084fc"/>
+                      <stop offset="100%" stopColor="#f472b6"/>
+                    </linearGradient>
+                  </defs>
+                  <rect width="32" height="32" rx="8" fill="#0f0f1a"/>
+                  <circle cx="16" cy="16" r="12" fill="none" stroke="url(#authAccent)" strokeWidth="1.5" opacity="0.3"/>
+                  <circle cx="16" cy="16" r="9" fill="none" stroke="url(#authGlow)" strokeWidth="2.5" opacity="0.2"/>
+                  <circle cx="16" cy="16" r="9" fill="none" stroke="url(#authAccent)" strokeWidth="2.5" 
+                          strokeDasharray="42 57" strokeLinecap="round" transform="rotate(-90 16 16)"/>
+                  <circle cx="16" cy="16" r="5" fill="#0f0f1a" stroke="url(#authAccent)" strokeWidth="0.5" opacity="0.8"/>
+                  <text x="16" y="20" textAnchor="middle" fontFamily="Arial, sans-serif" fontSize="10" fontWeight="bold" fill="url(#authGlow)">S</text>
+                  <circle cx="26" cy="5" r="1.5" fill="#fbbf24"/>
+                  <circle cx="5" cy="7" r="1" fill="#fbbf24" opacity="0.8"/>
+                </svg>
+              </div>
               <div>
                 <h1 className="text-white font-bold text-3xl">Serinity</h1>
                 <p className="text-white/60 text-sm">Focus Companion</p>
@@ -178,7 +200,29 @@ export default function AuthPage() {
           <div className="w-full max-w-md">
             {/* Mobile logo */}
             <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
-              <span className="text-3xl">✨</span>
+              <div className="w-10 h-10 relative">
+                <svg viewBox="0 0 32 32" className="w-full h-full">
+                  <defs>
+                    <linearGradient id="authMobileAccent" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#a855f7"/>
+                      <stop offset="100%" stopColor="#ec4899"/>
+                    </linearGradient>
+                    <linearGradient id="authMobileGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#c084fc"/>
+                      <stop offset="100%" stopColor="#f472b6"/>
+                    </linearGradient>
+                  </defs>
+                  <rect width="32" height="32" rx="8" fill="#0f0f1a"/>
+                  <circle cx="16" cy="16" r="12" fill="none" stroke="url(#authMobileAccent)" strokeWidth="1.5" opacity="0.3"/>
+                  <circle cx="16" cy="16" r="9" fill="none" stroke="url(#authMobileGlow)" strokeWidth="2.5" opacity="0.2"/>
+                  <circle cx="16" cy="16" r="9" fill="none" stroke="url(#authMobileAccent)" strokeWidth="2.5" 
+                          strokeDasharray="42 57" strokeLinecap="round" transform="rotate(-90 16 16)"/>
+                  <circle cx="16" cy="16" r="5" fill="#0f0f1a" stroke="url(#authMobileAccent)" strokeWidth="0.5" opacity="0.8"/>
+                  <text x="16" y="20" textAnchor="middle" fontFamily="Arial, sans-serif" fontSize="10" fontWeight="bold" fill="url(#authMobileGlow)">S</text>
+                  <circle cx="26" cy="5" r="1.5" fill="#fbbf24"/>
+                  <circle cx="5" cy="7" r="1" fill="#fbbf24" opacity="0.8"/>
+                </svg>
+              </div>
               <div>
                 <h1 className="text-white font-bold text-2xl">Serinity</h1>
                 <p className="text-white/60 text-xs">Focus Companion</p>

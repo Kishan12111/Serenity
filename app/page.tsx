@@ -186,7 +186,30 @@ export default function Home() {
           <nav className="backdrop-blur-md bg-black/60 border-b border-white/10 shrink-0 relative z-50">
             <div className="w-full px-4 md:px-6 py-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <span className="text-2xl">✨</span>
+                {/* Serinity Logo */}
+                <div className="w-8 h-8 relative">
+                  <svg viewBox="0 0 32 32" className="w-full h-full">
+                    <defs>
+                      <linearGradient id="navAccent" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#a855f7"/>
+                        <stop offset="100%" stopColor="#ec4899"/>
+                      </linearGradient>
+                      <linearGradient id="navGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#c084fc"/>
+                        <stop offset="100%" stopColor="#f472b6"/>
+                      </linearGradient>
+                    </defs>
+                    <rect width="32" height="32" rx="8" fill="#0f0f1a"/>
+                    <circle cx="16" cy="16" r="12" fill="none" stroke="url(#navAccent)" strokeWidth="1.5" opacity="0.3"/>
+                    <circle cx="16" cy="16" r="9" fill="none" stroke="url(#navGlow)" strokeWidth="2.5" opacity="0.2"/>
+                    <circle cx="16" cy="16" r="9" fill="none" stroke="url(#navAccent)" strokeWidth="2.5" 
+                            strokeDasharray="42 57" strokeLinecap="round" transform="rotate(-90 16 16)"/>
+                    <circle cx="16" cy="16" r="5" fill="#0f0f1a" stroke="url(#navAccent)" strokeWidth="0.5" opacity="0.8"/>
+                    <text x="16" y="20" textAnchor="middle" fontFamily="Arial, sans-serif" fontSize="10" fontWeight="bold" fill="url(#navGlow)">S</text>
+                    <circle cx="26" cy="5" r="1.5" fill="#fbbf24"/>
+                    <circle cx="5" cy="7" r="1" fill="#fbbf24" opacity="0.8"/>
+                  </svg>
+                </div>
                 <div>
                   <span className="text-white/95 font-bold text-base">Serinity</span>
                   <p className="text-white/50 text-xs">Focus Companion</p>
