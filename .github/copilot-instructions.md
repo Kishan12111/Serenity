@@ -1,8 +1,10 @@
 <!-- Use this file to provide workspace-specific custom instructions to Copilot. -->
 
-## Project: Serenity - Focus Timer App
+## Project: Serinity - Focus Timer App
 
 **The world's first free Pomodoro timer with comprehensive focus statistics and anime-inspired ambient themes.**
+
+**Domain**: https://www.serinityfocus.app
 
 ### Tech Stack
 - **Framework**: Next.js 16 (App Router)

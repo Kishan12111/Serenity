@@ -129,7 +129,7 @@ export default function AuthPage() {
             <div className="flex items-center gap-3 mb-8">
               <span className="text-4xl">✨</span>
               <div>
-                <h1 className="text-white font-bold text-3xl">Serenity</h1>
+                <h1 className="text-white font-bold text-3xl">Serinity</h1>
                 <p className="text-white/60 text-sm">Focus Companion</p>
               </div>
             </div>
@@ -180,7 +180,7 @@ export default function AuthPage() {
             <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
               <span className="text-3xl">✨</span>
               <div>
-                <h1 className="text-white font-bold text-2xl">Serenity</h1>
+                <h1 className="text-white font-bold text-2xl">Serinity</h1>
                 <p className="text-white/60 text-xs">Focus Companion</p>
               </div>
             </div>

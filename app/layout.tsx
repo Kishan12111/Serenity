@@ -13,8 +13,8 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] });
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://www.serinityfocus.app'),
   title: {
-    default: 'Serenity - Free Pomodoro Timer with Beautiful Stats | Anime Focus App',
-    template: '%s | Serenity Focus Timer',
+    default: 'Serinity - Free Pomodoro Timer with Beautiful Stats | Anime Focus App',
+    template: '%s | Serinity Focus Timer',
   },
   description: 'The world\'s first free Pomodoro timer with comprehensive focus statistics, anime-inspired ambient backgrounds, and cloud sync. Track your study sessions, build streaks, and boost productivity with beautiful aesthetics.',
   keywords: [
@@ -39,11 +39,11 @@ export const metadata: Metadata = {
     'productivity tracker',
     'lofi study timer',
   ],
-  authors: [{ name: 'Serenity Team' }],
-  creator: 'Serenity',
-  publisher: 'Serenity',
+  authors: [{ name: 'Serinity Team' }],
+  creator: 'Serinity',
+  publisher: 'Serinity',
   category: 'Productivity',
-  applicationName: 'Serenity Focus Timer',
+  applicationName: 'Serinity Focus Timer',
   generator: 'Next.js',
   
   // Open Graph for social sharing
@@ -51,15 +51,15 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: 'https://www.serinityfocus.app',
-    siteName: 'Serenity - Focus Companion',
-    title: 'Serenity - The First Free Pomodoro Timer with Beautiful Focus Statistics',
+    siteName: 'Serinity - Focus Companion',
+    title: 'Serinity - The First Free Pomodoro Timer with Beautiful Focus Statistics',
     description: 'Transform your study sessions with anime-inspired aesthetics. Free forever: track focus time, build streaks, sync across devices. The only Pomodoro app that makes productivity beautiful.',
     images: [
       {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'Serenity - Anime Focus Timer with Stats',
+        alt: 'Serinity - Anime Focus Timer with Stats',
         type: 'image/png',
       },
     ],
@@ -68,10 +68,10 @@ export const metadata: Metadata = {
   // Twitter Card
   twitter: {
     card: 'summary_large_image',
-    title: 'Serenity - Free Pomodoro Timer with Beautiful Stats',
+    title: 'Serinity - Free Pomodoro Timer with Beautiful Stats',
     description: 'The world\'s first free focus timer with comprehensive statistics & anime-inspired themes. Track, focus, achieve.',
     images: ['/twitter-image.png'],
-    creator: '@serenity_focus',
+    creator: '@serinity_focus',
   },
   
   // Additional metadata
@@ -87,13 +87,18 @@ export const metadata: Metadata = {
     },
   },
   
-  // Favicons and icons
+  // Favicons and icons - using PNG for better Google search compatibility
   icons: {
     icon: [
+      { url: '/favicon.ico', sizes: 'any' },
       { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon-512x512.png', sizes: '512x512', type: 'image/png' },
     ],
-    apple: '/favicon.svg',
-    shortcut: '/favicon.svg',
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+    shortcut: '/favicon.ico',
   },
   
   // Manifest for PWA
@@ -103,7 +108,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'Serenity',
+    title: 'Serinity',
   },
   
   // Verification (add your actual verification codes)
@@ -142,10 +147,10 @@ const structuredData = {
   '@graph': [
     {
       '@type': 'WebApplication',
-      '@id': 'https://serenity-focus.app/#webapp',
-      name: 'Serenity Focus Timer',
+      '@id': 'https://www.serinityfocus.app/#webapp',
+      name: 'Serinity Focus Timer',
       description: 'The world\'s first free Pomodoro timer with comprehensive focus statistics and anime-inspired ambient themes.',
-      url: 'https://serenity-focus.app',
+      url: 'https://www.serinityfocus.app',
       applicationCategory: 'ProductivityApplication',
       operatingSystem: 'Any',
       offers: {
@@ -174,29 +179,29 @@ const structuredData = {
     },
     {
       '@type': 'Organization',
-      '@id': 'https://serenity-focus.app/#organization',
-      name: 'Serenity',
-      url: 'https://serenity-focus.app',
-      logo: 'https://serenity-focus.app/logo.png',
+      '@id': 'https://www.serinityfocus.app/#organization',
+      name: 'Serinity',
+      url: 'https://www.serinityfocus.app',
+      logo: 'https://www.serinityfocus.app/logo.png',
       sameAs: [],
     },
     {
       '@type': 'WebSite',
-      '@id': 'https://serenity-focus.app/#website',
-      url: 'https://serenity-focus.app',
-      name: 'Serenity - Focus Companion',
+      '@id': 'https://www.serinityfocus.app/#website',
+      url: 'https://www.serinityfocus.app',
+      name: 'Serinity - Focus Companion',
       description: 'Free Pomodoro timer with beautiful statistics',
-      publisher: { '@id': 'https://serenity-focus.app/#organization' },
+      publisher: { '@id': 'https://www.serinityfocus.app/#organization' },
     },
     {
       '@type': 'FAQPage',
       mainEntity: [
         {
           '@type': 'Question',
-          name: 'Is Serenity really free?',
+          name: 'Is Serinity really free?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Yes! Serenity is 100% free forever. We believe everyone deserves access to great productivity tools. All features including statistics tracking, themes, and cloud sync are completely free.',
+            text: 'Yes! Serinity is 100% free forever. We believe everyone deserves access to great productivity tools. All features including statistics tracking, themes, and cloud sync are completely free.',
           },
         },
         {
@@ -204,15 +209,15 @@ const structuredData = {
           name: 'What is the Pomodoro Technique?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'The Pomodoro Technique is a time management method that uses a timer to break work into intervals, traditionally 25 minutes in length, separated by short breaks. Serenity makes this technique beautiful with anime-inspired themes.',
+            text: 'The Pomodoro Technique is a time management method that uses a timer to break work into intervals, traditionally 25 minutes in length, separated by short breaks. Serinity makes this technique beautiful with anime-inspired themes.',
           },
         },
         {
           '@type': 'Question',
-          name: 'Can I use Serenity without creating an account?',
+          name: 'Can I use Serinity without creating an account?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Absolutely! You can use Serenity immediately without signing up. Creating a free account enables cloud sync and preserves your statistics across devices.',
+            text: 'Absolutely! You can use Serinity immediately without signing up. Creating a free account enables cloud sync and preserves your statistics across devices.',
           },
         },
       ],

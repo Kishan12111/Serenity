@@ -1,10 +1,10 @@
-# Serenity - Anime-Inspired Focus & Study Companion
+# Serinity - Anime-Inspired Focus & Study Companion
 
 **The world's first free Pomodoro timer with comprehensive focus statistics and anime-inspired ambient themes.**
 
 Transform your study sessions with beautiful aesthetics. Track your focus time, build streaks, and boost productivity—completely free, forever.
 
-## ✨ Why Serenity?
+## ✨ Why Serinity?
 
 - **100% Free** - All features including cloud sync and statistics are completely free
 - **Beautiful Aesthetics** - Anime-inspired wallpapers create a calm, immersive environment

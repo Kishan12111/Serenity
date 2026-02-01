@@ -522,3 +522,43 @@ export const setupFirstAdmin = mutation({
     return { success: true, message: `${args.email} is now the first admin!` };
   },
 });
+
+// Update user streak (admin only)
+export const updateUserStreak = mutation({
+  args: {
+    adminEmail: v.string(),
+    userEmail: v.string(),
+    currentStreak: v.number(),
+    bestStreak: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    if (!(await isAdmin(ctx, args.adminEmail))) {
+      throw new Error("Unauthorized: Admin access required");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", args.userEmail.toLowerCase()))
+      .first();
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const today = new Date().toISOString().split("T")[0];
+    const newBestStreak = args.bestStreak ?? Math.max(args.currentStreak, user.streak.bestStreak);
+
+    await ctx.db.patch(user._id, {
+      streak: {
+        currentStreak: args.currentStreak,
+        bestStreak: newBestStreak,
+        lastActivityDate: today,
+      },
+    });
+
+    return { 
+      success: true, 
+      message: `Updated ${args.userEmail} streak to ${args.currentStreak} days (best: ${newBestStreak})` 
+    };
+  },
+});
