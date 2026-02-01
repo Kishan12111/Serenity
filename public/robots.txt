@@ -1,4 +1,4 @@
-# Serenity Focus Timer - robots.txt
+# Serinity Focus Timer - robots.txt
 # https://www.serinityfocus.app
 
 User-agent: *

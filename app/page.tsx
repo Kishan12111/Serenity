@@ -188,7 +188,7 @@ export default function Home() {
               <div className="flex items-center gap-3">
                 <span className="text-2xl">✨</span>
                 <div>
-                  <span className="text-white/95 font-bold text-base">Serenity</span>
+                  <span className="text-white/95 font-bold text-base">Serinity</span>
                   <p className="text-white/50 text-xs">Focus Companion</p>
                 </div>
                 {/* Offline indicator */}

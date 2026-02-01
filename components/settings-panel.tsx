@@ -269,7 +269,7 @@ export function SettingsPanel({
 
         {/* About */}
         <div className="glass-dark p-8 rounded-3xl border border-white/10 backdrop-blur-sm">
-          <h3 className="text-lg font-bold text-white mb-3">💫 About Serenity</h3>
+          <h3 className="text-lg font-bold text-white mb-3">💫 About Serinity</h3>
           <p className="text-white/70 text-sm leading-relaxed">
             A peaceful focus companion designed for deep work. All your data stays private—stored locally on your device with no tracking or servers.
           </p>

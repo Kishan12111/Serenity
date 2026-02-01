@@ -23,7 +23,7 @@ export function QuickGuide() {
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="glass dark:glass-dark rounded-2xl p-6 max-w-md w-full">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-foreground">How to Use Serenity</h2>
+          <h2 className="text-xl font-bold text-foreground">How to Use Serinity</h2>
           <button
             onClick={() => setIsOpen(false)}
             className="p-1 hover:bg-muted rounded-lg transition"

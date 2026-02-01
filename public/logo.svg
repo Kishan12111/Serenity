@@ -51,8 +51,8 @@
     <circle cx="0" cy="0" r="10" fill="url(#timerGrad)"/>
   </g>
   
-  <!-- Serenity text -->
+  <!-- Serinity text -->
   <text x="256" y="420" text-anchor="middle" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="white">
-    SERENITY
+    SERINITY
   </text>
 </svg>
