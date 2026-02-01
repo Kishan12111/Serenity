@@ -121,19 +121,21 @@ export function updateStreak(): void {
 
   // If user has sessions today, maintain or start streak
   if (stats[todayKey] && stats[todayKey].sessions > 0) {
-    if (!streakData.lastActivityDate) {
+    if (!streakData.lastActivityDate || streakData.lastActivityDate === '') {
       // First time
       streakData.currentStreak = 1;
       streakData.lastActivityDate = todayKey;
     } else {
-      const lastDate = new Date(streakData.lastActivityDate);
-      const today = new Date(todayKey);
+      // Parse dates manually to avoid timezone issues
+      // Date strings are in format "YYYY-MM-DD"
+      const [lastYear, lastMonth, lastDay] = streakData.lastActivityDate.split('-').map(Number);
+      const [todayYear, todayMonth, todayDay] = todayKey.split('-').map(Number);
+      
+      // Create dates at noon to avoid DST issues
+      const lastDate = new Date(lastYear, lastMonth - 1, lastDay, 12, 0, 0);
+      const today = new Date(todayYear, todayMonth - 1, todayDay, 12, 0, 0);
 
-      // Check if it's consecutive
-      lastDate.setHours(0, 0, 0, 0);
-      today.setHours(0, 0, 0, 0);
-
-      const daysDiff = Math.floor(
+      const daysDiff = Math.round(
         (today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24)
       );
 
@@ -142,7 +144,8 @@ export function updateStreak(): void {
         streakData.currentStreak += 1;
         streakData.lastActivityDate = todayKey;
       } else if (daysDiff === 0) {
-        // Same day, no change
+        // Same day, ensure lastActivityDate is set
+        streakData.lastActivityDate = todayKey;
       } else {
         // Streak broken
         streakData.currentStreak = 1;

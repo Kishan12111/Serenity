@@ -102,12 +102,12 @@ export default function Home() {
   }, [isRunning]);
 
   const handleSessionComplete = (duration: number) => {
+    // duration is already in minutes (passed from FocusTimer)
     if (duration > 0) {
-      const durationMinutes = Math.ceil(duration / 60);
       // Local storage
-      recordSession(durationMinutes);
+      recordSession(duration);
       // Convex (with offline support)
-      convexRecordSession(durationMinutes, 'focus');
+      convexRecordSession(duration, 'focus');
       
       const todayStats = getTodayStats();
       setTodayMinutes(todayStats.totalMinutes);

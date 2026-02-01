@@ -150,8 +150,8 @@ function updateStreak(
   currentStreak: { currentStreak: number; bestStreak: number; lastActivityDate: string },
   today: string
 ): { currentStreak: number; bestStreak: number; lastActivityDate: string } {
-  if (!currentStreak.lastActivityDate) {
-    // First activity
+  // First activity or invalid lastActivityDate
+  if (!currentStreak.lastActivityDate || currentStreak.lastActivityDate === "") {
     return {
       currentStreak: 1,
       bestStreak: Math.max(1, currentStreak.bestStreak),
@@ -159,14 +159,16 @@ function updateStreak(
     };
   }
 
-  const lastDate = new Date(currentStreak.lastActivityDate);
-  const todayDate = new Date(today);
-  lastDate.setHours(0, 0, 0, 0);
-  todayDate.setHours(0, 0, 0, 0);
+  // Parse dates as UTC to avoid timezone issues
+  // Date strings are in format "YYYY-MM-DD"
+  const [lastYear, lastMonth, lastDay] = currentStreak.lastActivityDate.split("-").map(Number);
+  const [todayYear, todayMonth, todayDay] = today.split("-").map(Number);
+  
+  // Create dates at noon UTC to avoid DST issues
+  const lastDate = Date.UTC(lastYear, lastMonth - 1, lastDay, 12, 0, 0);
+  const todayDate = Date.UTC(todayYear, todayMonth - 1, todayDay, 12, 0, 0);
 
-  const daysDiff = Math.floor(
-    (todayDate.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24)
-  );
+  const daysDiff = Math.round((todayDate - lastDate) / (1000 * 60 * 60 * 24));
 
   let newStreak = currentStreak.currentStreak;
 
@@ -174,10 +176,13 @@ function updateStreak(
     // Consecutive day
     newStreak = currentStreak.currentStreak + 1;
   } else if (daysDiff === 0) {
-    // Same day, no change
-    return currentStreak;
+    // Same day, no change needed - just ensure lastActivityDate is set
+    return {
+      ...currentStreak,
+      lastActivityDate: today,
+    };
   } else {
-    // Streak broken
+    // Streak broken (daysDiff > 1 or negative, which shouldn't happen)
     newStreak = 1;
   }
 
