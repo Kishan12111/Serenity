@@ -74,9 +74,16 @@ export const addElapsedTime = mutation({
       lifetimeTotals.totalBreakSeconds += args.seconds;
     }
 
+    // Update streak if focus mode (this marks activity for today)
+    let streak = { ...user.streak };
+    if (args.mode === "focus") {
+      streak = updateStreak(streak, today);
+    }
+
     await ctx.db.patch(user._id, {
       dailyStats: sortedStats,
       lifetimeTotals,
+      streak,
       lastActiveAt: Date.now(),
     });
   },
@@ -250,11 +257,12 @@ export const getStatsRange = query({
   },
 });
 
-// Get streak data
+// Get streak data - calculates current streak based on last activity
 export const getStreak = query({
   args: {
     email: v.optional(v.string()),
     visitorId: v.optional(v.string()),
+    clientDate: v.optional(v.string()), // Client's local date in YYYY-MM-DD format
   },
   handler: async (ctx, args) => {
     const user = await getUser(ctx, { email: args.email, visitorId: args.visitorId });
@@ -267,7 +275,35 @@ export const getStreak = query({
       };
     }
 
-    return user.streak;
+    const streak = user.streak;
+    
+    // If no last activity, return as-is
+    if (!streak.lastActivityDate || streak.lastActivityDate === "") {
+      return streak;
+    }
+
+    // Use client's date or server's UTC date
+    const today = args.clientDate || new Date().toISOString().split("T")[0];
+    
+    // Calculate days since last activity to check if streak is broken
+    const [lastYear, lastMonth, lastDay] = streak.lastActivityDate.split("-").map(Number);
+    const [todayYear, todayMonth, todayDay] = today.split("-").map(Number);
+    
+    const lastDate = Date.UTC(lastYear, lastMonth - 1, lastDay, 12, 0, 0);
+    const todayDate = Date.UTC(todayYear, todayMonth - 1, todayDay, 12, 0, 0);
+    
+    const daysDiff = Math.round((todayDate - lastDate) / (1000 * 60 * 60 * 24));
+    
+    // If more than 1 day has passed since last activity, streak is broken
+    if (daysDiff > 1) {
+      return {
+        currentStreak: 0, // Streak is broken, show 0 until they focus again
+        bestStreak: streak.bestStreak,
+        lastActivityDate: streak.lastActivityDate,
+      };
+    }
+    
+    return streak;
   },
 });
 

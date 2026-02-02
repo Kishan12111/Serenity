@@ -34,6 +34,7 @@ export function useConvexStats() {
 
   // Get identifier params for queries
   const identifierParams = userIdentifier || { visitorId: undefined, email: undefined };
+  const clientDate = getClientDate();
 
   // Queries - skip when offline
   const todayStats = useQuery(
@@ -43,7 +44,7 @@ export function useConvexStats() {
 
   const streak = useQuery(
     api.stats.getStreak,
-    userIdentifier && online ? identifierParams : "skip"
+    userIdentifier && online ? { ...identifierParams, clientDate } : "skip"
   );
 
   const lifetimeTotals = useQuery(
