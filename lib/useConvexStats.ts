@@ -15,6 +15,15 @@ import {
   isOnline,
 } from "./offlineQueue";
 
+// Helper to get client's local date in YYYY-MM-DD format
+function getClientDate(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 export function useConvexStats() {
   const { user, isAuthenticated } = useAuth();
   const userIdentifier = useUserIdentifier();
@@ -65,12 +74,14 @@ export function useConvexStats() {
             ...userIdentifier,
             mode: action.payload.mode || "focus",
             seconds: action.payload.seconds,
+            clientDate: action.payload.clientDate || getClientDate(),
           });
         } else if (action.type === "recordSession" && action.payload.durationMinutes) {
           await recordSessionMutation({
             ...userIdentifier,
             durationMinutes: action.payload.durationMinutes,
             mode: action.payload.mode || "focus",
+            clientDate: action.payload.clientDate || getClientDate(),
           });
         }
         removeFromOfflineQueue(action.id);
@@ -120,26 +131,27 @@ export function useConvexStats() {
       if (!userIdentifier || pendingSecondsRef.current <= 0) return;
 
       const seconds = pendingSecondsRef.current;
+      const clientDate = getClientDate();
       pendingSecondsRef.current = 0;
 
       // If offline, queue the action
       if (!isOnline()) {
         addToOfflineQueue({
           type: "addElapsedTime",
-          payload: { ...userIdentifier, mode, seconds },
+          payload: { ...userIdentifier, mode, seconds, clientDate },
         });
         updateOfflineStats(mode, seconds);
         return;
       }
 
       try {
-        await addElapsedTimeMutation({ ...userIdentifier, mode, seconds });
+        await addElapsedTimeMutation({ ...userIdentifier, mode, seconds, clientDate });
       } catch (error) {
         console.error("Failed to sync elapsed time:", error);
         // Queue for later if failed
         addToOfflineQueue({
           type: "addElapsedTime",
-          payload: { ...userIdentifier, mode, seconds },
+          payload: { ...userIdentifier, mode, seconds, clientDate },
         });
         updateOfflineStats(mode, seconds);
       }
@@ -182,24 +194,26 @@ export function useConvexStats() {
       // Flush any pending seconds first
       await flushPendingSeconds(mode);
 
+      const clientDate = getClientDate();
+
       // If offline, queue the action
       if (!isOnline()) {
         addToOfflineQueue({
           type: "recordSession",
-          payload: { ...userIdentifier, durationMinutes, mode },
+          payload: { ...userIdentifier, durationMinutes, mode, clientDate },
         });
         recordOfflineSession();
         return;
       }
 
       try {
-        await recordSessionMutation({ ...userIdentifier, durationMinutes, mode });
+        await recordSessionMutation({ ...userIdentifier, durationMinutes, mode, clientDate });
       } catch (error) {
         console.error("Failed to record session:", error);
         // Queue for later if failed
         addToOfflineQueue({
           type: "recordSession",
-          payload: { ...userIdentifier, durationMinutes, mode },
+          payload: { ...userIdentifier, durationMinutes, mode, clientDate },
         });
         recordOfflineSession();
       }
@@ -214,7 +228,7 @@ export function useConvexStats() {
       if (pendingSecondsRef.current > 0 && userIdentifier) {
         addToOfflineQueue({
           type: "addElapsedTime",
-          payload: { ...userIdentifier, mode: "focus", seconds: pendingSecondsRef.current },
+          payload: { ...userIdentifier, mode: "focus", seconds: pendingSecondsRef.current, clientDate: getClientDate() },
         });
       }
     };

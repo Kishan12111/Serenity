@@ -28,6 +28,7 @@ export const addElapsedTime = mutation({
     visitorId: v.optional(v.string()),
     mode: v.string(), // 'focus' | 'shortBreak' | 'longBreak'
     seconds: v.number(),
+    clientDate: v.optional(v.string()), // Client's local date in YYYY-MM-DD format
   },
   handler: async (ctx, args) => {
     if (args.seconds <= 0) return;
@@ -35,7 +36,8 @@ export const addElapsedTime = mutation({
     const user = await getUser(ctx, { email: args.email, visitorId: args.visitorId });
     if (!user) return;
 
-    const today = new Date().toISOString().split("T")[0];
+    // Use client's local date if provided, otherwise fallback to server UTC
+    const today = args.clientDate || new Date().toISOString().split("T")[0];
     const dailyStats = [...user.dailyStats];
     
     // Find or create today's stats
@@ -45,7 +47,7 @@ export const addElapsedTime = mutation({
       const todayStats = dailyStats[todayIndex];
       if (args.mode === "focus") {
         todayStats.focusSeconds += args.seconds;
-        todayStats.totalMinutes = Math.round(todayStats.focusSeconds / 60);
+        todayStats.totalMinutes = Math.floor(todayStats.focusSeconds / 60);
       } else {
         todayStats.breakSeconds += args.seconds;
       }
@@ -54,7 +56,7 @@ export const addElapsedTime = mutation({
       // Add new day entry
       dailyStats.push({
         date: today,
-        totalMinutes: args.mode === "focus" ? Math.round(args.seconds / 60) : 0,
+        totalMinutes: args.mode === "focus" ? Math.floor(args.seconds / 60) : 0,
         focusSeconds: args.mode === "focus" ? args.seconds : 0,
         breakSeconds: args.mode !== "focus" ? args.seconds : 0,
         sessions: 0,
@@ -87,13 +89,15 @@ export const recordSession = mutation({
     visitorId: v.optional(v.string()),
     durationMinutes: v.number(),
     mode: v.string(),
+    clientDate: v.optional(v.string()), // Client's local date in YYYY-MM-DD format
   },
   handler: async (ctx, args) => {
     const user = await getUser(ctx, { email: args.email, visitorId: args.visitorId });
     if (!user) return;
 
     const now = Date.now();
-    const today = new Date().toISOString().split("T")[0];
+    // Use client's local date if provided, otherwise fallback to server UTC
+    const today = args.clientDate || new Date().toISOString().split("T")[0];
 
     // Add to recent sessions
     const recentSessions = [

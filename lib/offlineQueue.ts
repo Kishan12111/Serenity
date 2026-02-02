@@ -13,6 +13,7 @@ export interface QueuedAction {
     mode?: string;
     seconds?: number;
     durationMinutes?: number;
+    clientDate?: string; // Client's local date in YYYY-MM-DD format
   };
   timestamp: number;
 }

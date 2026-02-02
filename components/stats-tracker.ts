@@ -316,7 +316,7 @@ export function addElapsedSeconds(mode: 'focus' | 'shortBreak' | 'longBreak', se
     }
     // Track seconds accurately, calculate minutes from seconds
     stats[todayKey].focusSeconds = (stats[todayKey].focusSeconds || 0) + seconds;
-    stats[todayKey].totalMinutes = Math.round(stats[todayKey].focusSeconds / 60);
+    stats[todayKey].totalMinutes = Math.floor(stats[todayKey].focusSeconds / 60);
     stats[todayKey].sessions = Math.max(1, stats[todayKey].sessions);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(stats));
     updateStreak();
