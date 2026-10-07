@@ -29,7 +29,7 @@ type TimerSnapshot = {
   mode: TimerMode;
   sessionsCompleted: number;
   customMinutes: string;
-  isCustomMode: boolean;
+  isCustomMode?: boolean;
   isPomodoro: boolean;
   pomodoroSettings: {
     focusTime: number;
@@ -56,7 +56,6 @@ export function FocusTimer({
   const [isRunning, setIsRunning] = useState(false);
   const [mode, setMode] = useState<TimerMode>('focus');
   const [sessionsCompleted, setSessionsCompleted] = useState(0);
-  const [isCustomMode, setIsCustomMode] = useState(true);
   const [pomodoroConfig, setPomodoroConfig] = useState(pomodoroSettingsProp);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const lastPersistRef = useRef<number>(Date.now());
@@ -92,7 +91,7 @@ export function FocusTimer({
   };
 
   const getDuration = () => {
-    if (isCustomMode && isPomodoro === false) {
+    if (!isPomodoro) {
       return parseInt(customMinutesProp) * 60 || 25 * 60;
     }
     return mode === 'focus'
@@ -106,6 +105,8 @@ export function FocusTimer({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.code === 'Space') {
+        const tag = (e.target as HTMLElement).tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target as HTMLElement).isContentEditable) return;
         e.preventDefault();
         setIsRunning((prev) => !prev);
       }
@@ -121,7 +122,13 @@ export function FocusTimer({
     const raw = localStorage.getItem(TIMER_STATE_KEY);
     if (!raw) return;
 
-    const snapshot = JSON.parse(raw) as TimerSnapshot;
+    let snapshot: TimerSnapshot;
+    try {
+      snapshot = JSON.parse(raw) as TimerSnapshot;
+    } catch {
+      localStorage.removeItem(TIMER_STATE_KEY);
+      return;
+    }
     const savedDuration = snapshot.isCustomMode && snapshot.isPomodoro === false
       ? (parseInt(snapshot.customMinutes || '25') || 25) * 60
       : snapshot.mode === 'focus'
@@ -138,7 +145,7 @@ export function FocusTimer({
 
     setMode(snapshot.mode || 'focus');
     setSessionsCompleted(snapshot.sessionsCompleted || 0);
-    setIsCustomMode(snapshot.isCustomMode ?? true);
+
     setPomodoroConfig(snapshot.pomodoroSettings || pomodoroConfig);
 
     if (adjustedTimeLeft === 0 && snapshot.isRunning) {
@@ -152,22 +159,23 @@ export function FocusTimer({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const persistState = (nextState?: Partial<TimerSnapshot>) => {
+  const persistState = (nextState?: Partial<TimerSnapshot>, force = false) => {
     if (typeof window === 'undefined') return;
+    const now = Date.now();
+    if (!force && now - lastPersistRef.current < 5000) return;
     const payload: TimerSnapshot = {
       timeLeft,
       isRunning,
       mode,
       sessionsCompleted,
       customMinutes: customMinutesProp,
-      isCustomMode,
       isPomodoro,
       pomodoroSettings: pomodoroConfig,
-      lastSaved: Date.now(),
+      lastSaved: now,
       ...nextState,
     };
     localStorage.setItem(TIMER_STATE_KEY, JSON.stringify(payload));
-    lastPersistRef.current = Date.now();
+    lastPersistRef.current = now;
   };
 
   useEffect(() => {
@@ -200,13 +208,13 @@ export function FocusTimer({
       // Calculate how many seconds passed since last recording
       const secondsElapsed = lastRecordedSecondRef.current - remaining;
       
-      // Record elapsed focus time (only whole seconds, only for focus mode)
-      if (secondsElapsed > 0 && modeRef.current === 'focus') {
+      // Record elapsed time for ALL modes (focus and breaks)
+      if (secondsElapsed > 0) {
         // Update local storage
-        localAddElapsedSeconds('focus', secondsElapsed);
+        localAddElapsedSeconds(modeRef.current, secondsElapsed);
         // Call Convex sync callback if provided
         if (onElapsedSeconds) {
-          onElapsedSeconds('focus', secondsElapsed);
+          onElapsedSeconds(modeRef.current === 'focus' ? 'focus' : 'break', secondsElapsed);
         }
         lastRecordedSecondRef.current = remaining;
       }
@@ -237,6 +245,19 @@ export function FocusTimer({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isRunning]);
 
+  const [countdown, setCountdown] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (countdown === null) return;
+    if (countdown <= 0) {
+      setIsRunning(true);
+      setCountdown(null);
+      return;
+    }
+    const timer = setInterval(() => setCountdown(prev => prev! - 1), 1000);
+    return () => clearInterval(timer);
+  }, [countdown]);
+
   const handleTimerComplete = (durationMinutes?: number) => {
     const sessionMinutes = durationMinutes || parseInt(customMinutesProp || '25');
 
@@ -250,25 +271,27 @@ export function FocusTimer({
 
     if (isPomodoro) {
       if (mode === 'focus') {
-        setSessionsCompleted((prev) => prev + 1);
-        const nextMode = sessionsCompleted % 4 === 3 ? 'longBreak' : 'shortBreak';
+        const nextSessionCount = sessionsCompleted + 1;
+        setSessionsCompleted(nextSessionCount);
+        const nextMode = nextSessionCount % 4 === 0 ? 'longBreak' : 'shortBreak';
         setMode(nextMode);
       } else {
         setMode('focus');
       }
+      setCountdown(3);
     }
-    persistState({ isRunning: false, timeLeft: getDuration() });
+    persistState({ isRunning: false, timeLeft: getDuration() }, true);
   };
 
   const handleToggleTimer = () => {
     setIsRunning(!isRunning);
-    persistState({ isRunning: !isRunning });
+    persistState({ isRunning: !isRunning }, true);
   };
 
   const handleReset = () => {
     setIsRunning(false);
     setTimeLeft(getDuration());
-    persistState({ isRunning: false, timeLeft: getDuration() });
+    persistState({ isRunning: false, timeLeft: getDuration() }, true);
   };
 
   const formatTime = (seconds: number) => {
@@ -344,37 +367,53 @@ export function FocusTimer({
 
         {/* Timer Display */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <div className="text-center">
-            <div className={`${getTimerTextSize()} font-bold bg-gradient-to-br ${currentConfig.color} bg-clip-text text-transparent font-mono tracking-tight drop-shadow-lg ${isRunning ? 'breathe' : ''}`}>
-              {formatTime(timeLeft)}
+          {countdown !== null ? (
+            <div className="text-center">
+              <div className="text-sm font-medium text-white/70 mb-2">Starting in</div>
+              <div className="text-6xl font-bold text-white drop-shadow-lg">{countdown}</div>
             </div>
-            {isPomodoro && <p className="text-white/50 text-xs mt-1">Session {sessionsCompleted + 1}</p>}
-          </div>
+          ) : (
+            <div className="text-center">
+              <div className={`${getTimerTextSize()} font-bold bg-gradient-to-br ${currentConfig.color} bg-clip-text text-transparent font-mono tracking-tight drop-shadow-lg ${isRunning ? 'breathe' : ''}`}>
+                {formatTime(timeLeft)}
+              </div>
+              {isPomodoro && <p className="text-white/50 text-xs mt-1">Session {sessionsCompleted + 1}</p>}
+            </div>
+          )}
         </div>
       </div>
 
       {/* Control Buttons - Always visible */}
       <div className="flex gap-3 justify-center">
-        <button
-          onClick={handleToggleTimer}
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold text-sm transition-all border ${
-            isRunning
-              ? 'bg-red-500/20 hover:bg-red-500/30 border-red-400/40 text-white'
-              : 'bg-white/15 hover:bg-white/25 border-white/20 text-white'
-          }`}
-        >
-          {isRunning ? (
-            <>
-              <Pause size={16} />
-              <span>Pause</span>
-            </>
-          ) : (
-            <>
-              <Play size={16} />
-              <span>Start</span>
-            </>
-          )}
-        </button>
+        {countdown !== null ? (
+          <button
+            onClick={() => setCountdown(0)}
+            className="px-6 py-2.5 rounded-full font-semibold text-sm transition-all border bg-white/15 hover:bg-white/25 border-white/20 text-white"
+          >
+            Skip Countdown
+          </button>
+        ) : (
+          <button
+            onClick={handleToggleTimer}
+            className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold text-sm transition-all border ${
+              isRunning
+                ? 'bg-red-500/20 hover:bg-red-500/30 border-red-400/40 text-white'
+                : 'bg-white/15 hover:bg-white/25 border-white/20 text-white'
+            }`}
+          >
+            {isRunning ? (
+              <>
+                <Pause size={16} />
+                <span>Pause</span>
+              </>
+            ) : (
+              <>
+                <Play size={16} />
+                <span>Start</span>
+              </>
+            )}
+          </button>
+        )}
 
         <button
           onClick={handleReset}

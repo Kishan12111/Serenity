@@ -4,25 +4,25 @@ import { useEffect, useState } from 'react';
 import { CheckCircle, Target } from 'lucide-react';
 
 interface SessionNotificationProps {
-  isVisible: boolean;
+  notificationId: number;
   sessionType: 'focus' | 'break';
   duration: number;
 }
 
 export function SessionNotification({
-  isVisible,
+  notificationId,
   sessionType,
   duration,
 }: SessionNotificationProps) {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    if (isVisible) {
+    if (notificationId > 0) {
       setShow(true);
-      const timer = setTimeout(() => setShow(false), 4000);
+      const timer = setTimeout(() => setShow(false), 4500);
       return () => clearTimeout(timer);
     }
-  }, [isVisible]);
+  }, [notificationId]);
 
   if (!show) return null;
 

@@ -5,19 +5,15 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { WallpaperScene } from '@/components/wallpaper-background';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Shield, MessageCircle } from 'lucide-react';
+
+import { AmbientSound } from '@/lib/useAudio';
 
 interface SettingsPanelProps {
   onWallpaperChange: (scene: WallpaperScene) => void;
   onAnimationToggle: (enabled: boolean) => void;
-  onSoundChange: (sound: 'rain' | 'cafe' | 'silence') => void;
+  onSoundChange: (sound: AmbientSound) => void;
+  onAlarmSoundChange?: (sound: 'bell' | 'chime' | 'digital' | 'bowl' | 'none') => void;
   onPomodoroSettingsChange: (settings: {
     focusTime: number;
     shortBreak: number;
@@ -38,13 +34,15 @@ export function SettingsPanel({
   onWallpaperChange,
   onAnimationToggle,
   onSoundChange,
+  onAlarmSoundChange,
   onPomodoroSettingsChange,
   superFocusMode = false,
   onSuperFocusModeChange,
 }: SettingsPanelProps) {
   const [wallpaper, setWallpaper] = useState<WallpaperScene>('night-sky');
   const [animationsEnabled, setAnimationsEnabled] = useState(true);
-  const [ambientSound, setAmbientSound] = useState<'rain' | 'cafe' | 'silence'>('silence');
+  const [ambientSound, setAmbientSound] = useState<AmbientSound>('silence');
+  const [alarmSound, setAlarmSound] = useState<'bell' | 'chime' | 'digital' | 'bowl' | 'none'>('bell');
   const [focusTime, setFocusTime] = useState(25);
   const [shortBreak, setShortBreak] = useState(5);
   const [longBreak, setLongBreak] = useState(15);
@@ -61,47 +59,41 @@ export function SettingsPanel({
       setWallpaper(settings.wallpaper || 'night-sky');
       setAnimationsEnabled(settings.animationsEnabled !== false);
       setAmbientSound(settings.ambientSound || 'silence');
+      setAlarmSound(settings.alarmSound || 'bell');
       setFocusTime(settings.focusTime || 25);
       setShortBreak(settings.shortBreak || 5);
       setLongBreak(settings.longBreak || 15);
     }
   }, []);
 
-  const saveSettings = () => {
-    const settings = {
-      wallpaper,
-      animationsEnabled,
-      ambientSound,
-      focusTime,
-      shortBreak,
-      longBreak,
-    };
+  const saveSettings = (overrides: Record<string, unknown> = {}) => {
+    const existing = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('serenity_settings') || '{}') : {};
+    const settings = { ...existing, wallpaper, animationsEnabled, ambientSound, focusTime, shortBreak, longBreak, ...overrides };
     localStorage.setItem('serenity_settings', JSON.stringify(settings));
   };
 
   const handleWallpaperChange = (value: WallpaperScene) => {
     setWallpaper(value);
     onWallpaperChange(value);
-    localStorage.setItem('serenity_settings', JSON.stringify({
-      wallpaper: value,
-      animationsEnabled,
-      ambientSound,
-      focusTime,
-      shortBreak,
-      longBreak,
-    }));
+    saveSettings({ wallpaper: value });
   };
 
   const handleAnimationToggle = (checked: boolean) => {
     setAnimationsEnabled(checked);
     onAnimationToggle(checked);
-    saveSettings();
+    saveSettings({ animationsEnabled: checked });
   };
 
-  const handleSoundChange = (sound: 'rain' | 'cafe' | 'silence') => {
+  const handleSoundChange = (sound: AmbientSound) => {
     setAmbientSound(sound);
     onSoundChange(sound);
-    saveSettings();
+    saveSettings({ ambientSound: sound });
+  };
+
+  const handleAlarmSoundChange = (sound: 'bell' | 'chime' | 'digital' | 'bowl' | 'none') => {
+    setAlarmSound(sound);
+    onAlarmSoundChange?.(sound);
+    saveSettings({ alarmSound: sound });
   };
 
   const updatePomodoroSetting = (key: string, value: number) => {
@@ -114,7 +106,7 @@ export function SettingsPanel({
       longBreak: key === 'longBreak' ? value : longBreak,
     };
     onPomodoroSettingsChange(settings);
-    saveSettings();
+    saveSettings(settings);
   };
 
   return (
@@ -162,17 +154,19 @@ export function SettingsPanel({
           <h3 className="text-xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent mb-6">
             🎵 Ambient Mood
           </h3>
-          <p className="text-white/60 text-sm mb-4">Visual indicators to set your focus mood</p>
-          <div className="grid grid-cols-3 gap-3">
+          <p className="text-white/60 text-sm mb-4">Plays ambient audio while your timer is running</p>
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
             {[
               { id: 'rain', label: '🌧️ Rain', value: 'rain' },
               { id: 'cafe', label: '☕ Café', value: 'cafe' },
+              { id: 'ocean', label: '🌊 Ocean', value: 'ocean' },
+              { id: 'forest', label: '🌲 Forest', value: 'forest' },
               { id: 'silence', label: '🔇 Silence', value: 'silence' },
             ].map(({ id, label, value }) => (
               <button
                 key={id}
-                onClick={() => handleSoundChange(value as 'rain' | 'cafe' | 'silence')}
-                className={`p-4 rounded-xl font-medium transition-all border-2 ${
+                onClick={() => handleSoundChange(value as any)}
+                className={`p-3 rounded-xl font-medium transition-all border-2 text-sm ${
                   ambientSound === value
                     ? 'bg-gradient-to-br from-emerald-500/30 to-teal-500/30 border-emerald-400/60'
                     : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20'
@@ -181,6 +175,31 @@ export function SettingsPanel({
                 {label}
               </button>
             ))}
+          </div>
+          
+          <div className="mt-8">
+            <h3 className="text-white/80 font-medium mb-3">Timer Alarm</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+              {[
+                { id: 'bell', label: '🔔 Bell', value: 'bell' },
+                { id: 'chime', label: '✨ Chime', value: 'chime' },
+                { id: 'digital', label: '📱 Digital', value: 'digital' },
+                { id: 'bowl', label: '🧘 Bowl', value: 'bowl' },
+                { id: 'none', label: '🔇 None', value: 'none' },
+              ].map(({ id, label, value }) => (
+                <button
+                  key={id}
+                  onClick={() => handleAlarmSoundChange(value as any)}
+                  className={`p-3 rounded-xl font-medium transition-all border-2 text-sm ${
+                    alarmSound === value
+                      ? 'bg-gradient-to-br from-blue-500/30 to-indigo-500/30 border-blue-400/60'
+                      : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20'
+                  } text-white`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -235,43 +254,13 @@ export function SettingsPanel({
           </div>
         </div>
 
-        {/* Super Focus Mode */}
-        <div className="glass-dark p-8 rounded-3xl border border-white/10 backdrop-blur-sm">
-          <h3 className="text-xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent mb-6 flex items-center gap-2">
-            <Shield className="h-5 w-5 text-indigo-400" />
-            Super Focus Mode
-          </h3>
-          <p className="text-white/60 text-sm mb-4">
-            Block all distractions including the Focus Forum chat during timer sessions
-          </p>
-          <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10">
-            <div className="flex items-center gap-3">
-              <MessageCircle className="h-5 w-5 text-white/60" />
-              <div>
-                <label className="text-white font-medium">Hide Forum During Focus</label>
-                <p className="text-white/50 text-xs mt-0.5">Disables floating chat while timer is running</p>
-              </div>
-            </div>
-            <Switch
-              checked={localSuperFocusMode}
-              onCheckedChange={(checked) => {
-                setLocalSuperFocusMode(checked);
-                onSuperFocusModeChange?.(checked);
-                const saved = localStorage.getItem('serenity_settings');
-                const settings = saved ? JSON.parse(saved) : {};
-                settings.superFocusMode = checked;
-                localStorage.setItem('serenity_settings', JSON.stringify(settings));
-              }}
-              className="data-[state=checked]:bg-indigo-500"
-            />
-          </div>
-        </div>
+
 
         {/* About */}
         <div className="glass-dark p-8 rounded-3xl border border-white/10 backdrop-blur-sm">
           <h3 className="text-lg font-bold text-white mb-3">💫 About Serinity</h3>
           <p className="text-white/70 text-sm leading-relaxed">
-            A peaceful focus companion designed for deep work. All your data stays private—stored locally on your device with no tracking or servers.
+            A peaceful focus companion designed for deep work. Your data syncs securely to the cloud when signed in, and is stored locally when offline.
           </p>
         </div>
       </div>
