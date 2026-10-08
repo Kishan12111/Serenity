@@ -32,18 +32,9 @@ export function useConvexStats() {
   const [online, setOnline] = useState(true);
   const syncingRef = useRef(false);
 
-  // Keep clientDate fresh even if app stays open past midnight
-  const [clientDate, setClientDate] = useState(getClientDate());
-  useEffect(() => {
-    const timer = setInterval(() => {
-      const freshDate = getClientDate();
-      if (freshDate !== clientDate) setClientDate(freshDate);
-    }, 60000); // check every minute
-    return () => clearInterval(timer);
-  }, [clientDate]);
-
   // Get identifier params for queries
   const identifierParams = userIdentifier || { visitorId: undefined, email: undefined };
+  const clientDate = getClientDate();
 
   // Queries - skip when offline
   const todayStats = useQuery(
@@ -53,7 +44,7 @@ export function useConvexStats() {
 
   const streak = useQuery(
     api.stats.getStreak,
-    userIdentifier && online ? identifierParams : "skip"
+    userIdentifier && online ? { ...identifierParams, clientDate } : "skip"
   );
 
   const lifetimeTotals = useQuery(
@@ -84,14 +75,14 @@ export function useConvexStats() {
             ...userIdentifier,
             mode: action.payload.mode || "focus",
             seconds: action.payload.seconds,
-            
+            clientDate: action.payload.clientDate || getClientDate(),
           });
         } else if (action.type === "recordSession" && action.payload.durationMinutes) {
           await recordSessionMutation({
             ...userIdentifier,
             durationMinutes: action.payload.durationMinutes,
             mode: action.payload.mode || "focus",
-            
+            clientDate: action.payload.clientDate || getClientDate(),
           });
         }
         removeFromOfflineQueue(action.id);
@@ -148,20 +139,20 @@ export function useConvexStats() {
       if (!isOnline()) {
         addToOfflineQueue({
           type: "addElapsedTime",
-          payload: { ...userIdentifier, mode, seconds },
+          payload: { ...userIdentifier, mode, seconds, clientDate },
         });
         updateOfflineStats(mode, seconds);
         return;
       }
 
       try {
-        await addElapsedTimeMutation({ ...userIdentifier, mode, seconds });
+        await addElapsedTimeMutation({ ...userIdentifier, mode, seconds, clientDate });
       } catch (error) {
         console.error("Failed to sync elapsed time:", error);
         // Queue for later if failed
         addToOfflineQueue({
           type: "addElapsedTime",
-          payload: { ...userIdentifier, mode, seconds },
+          payload: { ...userIdentifier, mode, seconds, clientDate },
         });
         updateOfflineStats(mode, seconds);
       }
@@ -210,20 +201,20 @@ export function useConvexStats() {
       if (!isOnline()) {
         addToOfflineQueue({
           type: "recordSession",
-          payload: { ...userIdentifier, durationMinutes, mode },
+          payload: { ...userIdentifier, durationMinutes, mode, clientDate },
         });
         recordOfflineSession();
         return;
       }
 
       try {
-        await recordSessionMutation({ ...userIdentifier, durationMinutes, mode });
+        await recordSessionMutation({ ...userIdentifier, durationMinutes, mode, clientDate });
       } catch (error) {
         console.error("Failed to record session:", error);
         // Queue for later if failed
         addToOfflineQueue({
           type: "recordSession",
-          payload: { ...userIdentifier, durationMinutes, mode },
+          payload: { ...userIdentifier, durationMinutes, mode, clientDate },
         });
         recordOfflineSession();
       }
@@ -238,7 +229,7 @@ export function useConvexStats() {
       if (pendingSecondsRef.current > 0 && userIdentifier) {
         addToOfflineQueue({
           type: "addElapsedTime",
-          payload: { ...userIdentifier, mode: "focus", seconds: pendingSecondsRef.current },
+          payload: { ...userIdentifier, mode: "focus", seconds: pendingSecondsRef.current, clientDate: getClientDate() },
         });
       }
     };
@@ -266,7 +257,7 @@ export function useConvexStats() {
     user,
     isAuthenticated,
     isOnline: online,
-    isLoading: !userIdentifier || (online && (todayStats === undefined || lifetimeTotals === undefined)),
+    isLoading: !userIdentifier || (online && todayStats === undefined),
     todayStats: mergedTodayStats,
     streak: streak || { currentStreak: 0, bestStreak: 0, lastActivityDate: "" },
     lifetimeTotals: lifetimeTotals || { focusMinutes: 0, focusHours: 0, totalSessions: 0 },

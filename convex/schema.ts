@@ -74,10 +74,6 @@ export default defineSchema({
         durationMinutes: v.number(),
         mode: v.string(), // 'focus' | 'shortBreak' | 'longBreak'
         completed: v.boolean(),
-        // Optional metadata fields
-        label: v.optional(v.string()),
-        labelCategory: v.optional(v.string()),
-        startHour: v.optional(v.number()),
       })
     ),
   })

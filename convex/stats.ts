@@ -97,11 +97,8 @@ export const recordSession = mutation({
     durationMinutes: v.number(),
     mode: v.string(),
     clientDate: v.optional(v.string()), // Client's local date in YYYY-MM-DD format
-    label: v.optional(v.string()),
-    labelCategory: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    if (args.durationMinutes <= 0) return;
     const user = await getUser(ctx, { email: args.email, visitorId: args.visitorId });
     if (!user) return;
 
@@ -117,9 +114,6 @@ export const recordSession = mutation({
         durationMinutes: args.durationMinutes,
         mode: args.mode,
         completed: true,
-        startHour: new Date(now - args.durationMinutes * 60 * 1000).getHours(),
-        label: args.label,
-        labelCategory: args.labelCategory,
       },
       ...user.recentSessions,
     ].slice(0, MAX_SESSIONS);
@@ -224,12 +218,11 @@ export const getTodayStats = query({
   args: {
     email: v.optional(v.string()),
     visitorId: v.optional(v.string()),
-    clientDate: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const user = await getUser(ctx, { email: args.email, visitorId: args.visitorId });
     
-    const today = args.clientDate || new Date().toISOString().split("T")[0];
+    const today = new Date().toISOString().split("T")[0];
     const defaultStats: DailyStat = {
       date: today,
       totalMinutes: 0,
@@ -353,28 +346,5 @@ export const getRecentSessions = query({
     if (!user) return [];
 
     return user.recentSessions.slice(0, args.limit || 10);
-  },
-});
-
-export const updateSessionLabel = mutation({
-  args: {
-    email: v.optional(v.string()),
-    visitorId: v.optional(v.string()),
-    sessionIndex: v.number(),
-    label: v.string(),
-    labelCategory: v.optional(v.string()),
-  },
-  handler: async (ctx, args) => {
-    const user = await getUser(ctx, { email: args.email, visitorId: args.visitorId });
-    if (!user) return;
-    const sessions = [...user.recentSessions];
-    if (sessions[args.sessionIndex]) {
-      sessions[args.sessionIndex] = {
-        ...sessions[args.sessionIndex],
-        label: args.label,
-        labelCategory: args.labelCategory,
-      };
-    }
-    await ctx.db.patch(user._id, { recentSessions: sessions });
   },
 });

@@ -32,16 +32,6 @@ interface User {
     totalBreakSeconds: number;
     totalSessions: number;
   };
-  recentSessions?: Array<{
-    startedAt: number;
-    endedAt: number;
-    durationMinutes: number;
-    mode: string;
-    completed: boolean;
-    label?: string;
-    labelCategory?: string;
-    startHour?: number;
-  }>;
 }
 
 interface AuthContextType {

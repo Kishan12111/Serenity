@@ -5,9 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { WallpaperBackground, WallpaperScene } from '@/components/wallpaper-background';
-import { MonthlyCalendar } from '@/components/monthly-calendar';
-import { DayView } from '@/components/day-view';
-import { useAudio, playAlarm, AmbientSound, AlarmSound } from '@/lib/useAudio';
 import { FocusTimer } from '@/components/focus-timer';
 import { StatsDashboard } from '@/components/stats-dashboard';
 import { SettingsPanel } from '@/components/settings-panel';
@@ -18,10 +15,10 @@ import { AdminPanel, AdminButton } from '@/components/admin-panel';
 import { recordSession, getTodayStats } from '@/components/stats-tracker';
 import { useAuth } from '@/lib/useAuth';
 import { Button } from '@/components/ui/button';
-import { Clock, BarChart3, Settings, Image, X, User, LogOut, LogIn, WifiOff, MessageCircle, Shield, CalendarDays } from 'lucide-react';
+import { Clock, BarChart3, Settings, Image, X, User, LogOut, LogIn, WifiOff, MessageCircle, Shield } from 'lucide-react';
 import { useConvexStats } from '@/lib/useConvexStats';
 
-type Page = 'focus' | 'stats' | 'settings' | 'forum' | 'calendar' | 'day-view';
+type Page = 'focus' | 'stats' | 'settings' | 'forum';
 
 const QUOTES = [
   'Every moment of focus brings you closer to your goals.',
@@ -63,17 +60,12 @@ export default function Home() {
   const [notification, setNotification] = useState<{
     type: 'focus' | 'break';
     duration: number;
-    id: number;
-  }>({ type: 'focus', duration: 0, id: 0 });
-  
-  const [selectedDateStr, setSelectedDateStr] = useState<string>(new Date().toISOString().split('T')[0]);
+    visible: boolean;
+  }>({ type: 'focus', duration: 0, visible: false });
 
   // Query for unread message count
   const messageCount = useQuery(api.forum.getMessageCount, { since: lastSeenMessageTime });
   const unreadCount = messageCount || 0;
-
-  const audio = useAudio();
-  const [alarmSound, setAlarmSound] = useState<AlarmSound>('bell');
 
   // Load settings and today's stats on mount
   useEffect(() => {
@@ -89,12 +81,6 @@ export default function Home() {
         longBreak: settings.longBreak || 15,
       });
       setCustomMinutes(settings.customMinutes || '25');
-      if (settings.ambientSound) {
-        audio.setAmbient(settings.ambientSound);
-      }
-      if (settings.alarmSound) {
-        setAlarmSound(settings.alarmSound);
-      }
     }
 
     // Set random quote
@@ -107,22 +93,13 @@ export default function Home() {
 
   // Update today's minutes periodically when running
   useEffect(() => {
-    if (!isRunning) {
-      audio.pauseAmbient();
-      return;
-    }
-    
-    // Start ambient if not playing and not silence
-    if (!audio.isPlaying && audio.currentAmbient !== 'silence') {
-      audio.startAmbient();
-    }
-
+    if (!isRunning) return;
     const interval = setInterval(() => {
       const todayStats = getTodayStats();
       setTodayMinutes(todayStats.totalMinutes);
     }, 1000); // Update every second for accurate display
     return () => clearInterval(interval);
-  }, [isRunning, audio]);
+  }, [isRunning]);
 
   const handleSessionComplete = (duration: number) => {
     // duration is already in minutes (passed from FocusTimer)
@@ -143,8 +120,7 @@ export default function Home() {
   };
 
   const handleNotification = (type: 'focus' | 'break', duration: number) => {
-    playAlarm(alarmSound);
-    setNotification(prev => ({ type, duration, id: prev.id + 1 }));
+    setNotification({ type, duration, visible: true });
   };
 
   const handleWallpaperChange = (scene: WallpaperScene) => {
@@ -156,8 +132,8 @@ export default function Home() {
     setAnimationsEnabled(enabled);
   };
 
-  const handleSoundChange = (sound: AmbientSound) => {
-    audio.setAmbient(sound);
+  const handleSoundChange = (sound: 'rain' | 'cafe' | 'silence') => {
+    // Future ambient sound implementation
   };
 
   const handlePomodoroSettingsChange = (settings: {
@@ -198,7 +174,7 @@ export default function Home() {
 
       {/* Session notification */}
       <SessionNotification
-        notificationId={notification.id}
+        isVisible={notification.visible}
         sessionType={notification.type}
         duration={notification.duration}
       />
@@ -294,20 +270,6 @@ export default function Home() {
                       {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                   )}
-                </Button>
-
-                <Button
-                  onClick={() => setCurrentPage('calendar')}
-                  variant="ghost"
-                  size="sm"
-                  className={`rounded-full text-sm px-4 py-2 ${
-                    currentPage === 'calendar' || currentPage === 'day-view'
-                      ? 'bg-white/15 text-white'
-                      : 'text-white/60 hover:text-white hover:bg-white/10'
-                  }`}
-                >
-                  <CalendarDays className="h-4 w-4 mr-2" />
-                  Calendar
                 </Button>
 
                 <Button
@@ -468,45 +430,10 @@ export default function Home() {
         {/* Main content */}
         <main className="flex-1 flex items-center justify-center overflow-hidden p-4">
           {currentPage === 'focus' && (
-            <div className="w-full h-full absolute inset-0 z-0 bg-black">
-              <DayView 
-                dateStr={new Date().toISOString().split('T')[0]} 
-                sessions={(user?.recentSessions || []).filter(s => {
-                  const d = new Date(s.startedAt);
-                  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}` === new Date().toISOString().split('T')[0];
-                }).map((s, i) => {
-                  const start = new Date(s.startedAt);
-                  const end = new Date(s.endedAt);
-                  return {
-                    startHour: start.getHours(),
-                    startMinute: start.getMinutes(),
-                    endHour: end.getHours(),
-                    endMinute: end.getMinutes(),
-                    label: s.label,
-                    labelCategory: s.labelCategory,
-                    durationMinutes: s.durationMinutes,
-                    mode: s.mode,
-                    sessionIndex: i
-                  };
-                })}
-              >
-                <FocusTimer
-                  onSessionComplete={handleSessionComplete}
-                  onNotification={handleNotification}
-                  onElapsedSeconds={handleElapsedSeconds}
-                  isPomodoro={isPomodoro}
-                  customMinutes={customMinutes}
-                  pomodoroSettings={pomodoroSettings}
-                  onRunningChange={setIsRunning}
-                  variant="compact"
-                />
-              </DayView>
-
-              {/* Overlays on top of DayView */}
-              <div className="absolute inset-0 pointer-events-none z-20 flex items-center justify-between px-12">
+            <div className="w-full h-full max-w-5xl mx-auto flex flex-col lg:flex-row items-center justify-center gap-6">
               {/* Left side: Timer settings (when not running) */}
               {!isRunning && (
-                <div className="lg:w-64 w-full max-w-sm order-2 lg:order-1 shrink-0 pointer-events-auto">
+                <div className="lg:w-64 w-full max-w-sm order-2 lg:order-1 shrink-0">
                   {/* Streak indicator */}
                   <div className="flex justify-center mb-4">
                     <StreakIndicator variant="compact" />
@@ -576,9 +503,22 @@ export default function Home() {
                 </div>
               )}
 
+              {/* Center: Timer */}
+              <div className="order-1 lg:order-2 flex-1 flex items-center justify-center">
+                <FocusTimer
+                  onSessionComplete={handleSessionComplete}
+                  onNotification={handleNotification}
+                  onElapsedSeconds={handleElapsedSeconds}
+                  isPomodoro={isPomodoro}
+                  customMinutes={customMinutes}
+                  pomodoroSettings={pomodoroSettings}
+                  onRunningChange={setIsRunning}
+                />
+              </div>
+
               {/* Right side: Today stats & quote (when not running) */}
               {!isRunning && (
-                <div className="lg:w-64 w-full max-w-sm order-3 shrink-0 pointer-events-auto">
+                <div className="lg:w-64 w-full max-w-sm order-3 shrink-0">
                   <div className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4 space-y-3">
                     <div className="flex items-center gap-2">
                       <Clock className="h-4 w-4 text-white/60" />
@@ -593,7 +533,6 @@ export default function Home() {
                   </div>
                 </div>
               )}
-              </div>
             </div>
           )}
 
@@ -615,43 +554,9 @@ export default function Home() {
                 onWallpaperChange={handleWallpaperChange}
                 onAnimationToggle={handleAnimationToggle}
                 onSoundChange={handleSoundChange}
-                onAlarmSoundChange={setAlarmSound}
                 onPomodoroSettingsChange={handlePomodoroSettingsChange}
                 superFocusMode={superFocusMode}
                 onSuperFocusModeChange={setSuperFocusMode}
-              />
-            </div>
-          )}
-
-          {currentPage === 'calendar' && (
-            <div className="w-full h-full overflow-auto py-6 flex items-center justify-center">
-              <MonthlyCalendar onDayClick={(date) => { setSelectedDateStr(date); setCurrentPage('day-view'); }} />
-            </div>
-          )}
-
-          {currentPage === 'day-view' && (
-            <div className="w-full h-full absolute inset-0 z-[100] bg-black">
-              <DayView 
-                dateStr={selectedDateStr} 
-                sessions={(user?.recentSessions || []).filter(s => {
-                  const d = new Date(s.startedAt);
-                  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}` === selectedDateStr;
-                }).map((s, i) => {
-                  const start = new Date(s.startedAt);
-                  const end = new Date(s.endedAt);
-                  return {
-                    startHour: start.getHours(),
-                    startMinute: start.getMinutes(),
-                    endHour: end.getHours(),
-                    endMinute: end.getMinutes(),
-                    label: s.label,
-                    labelCategory: s.labelCategory,
-                    durationMinutes: s.durationMinutes,
-                    mode: s.mode,
-                    sessionIndex: i
-                  };
-                })} 
-                onBack={() => setCurrentPage('calendar')} 
               />
             </div>
           )}

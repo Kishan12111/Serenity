@@ -243,6 +243,8 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* Preload critical resources */}
+        <link rel="preload" href="/backgrounds/night-sky.jpg" as="image" />
       </head>
       <body className={`font-sans antialiased`}>
         <ConvexClientProvider>

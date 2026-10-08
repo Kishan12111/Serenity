@@ -11,7 +11,6 @@ interface FocusTimerProps {
   onRunningChange?: (running: boolean) => void;
   onElapsedSeconds?: (mode: string, seconds: number) => void;
   isPomodoro?: boolean;
-  variant?: 'default' | 'compact';
   customMinutes?: string;
   pomodoroSettings?: {
     focusTime: number;
@@ -30,7 +29,7 @@ type TimerSnapshot = {
   mode: TimerMode;
   sessionsCompleted: number;
   customMinutes: string;
-  isCustomMode?: boolean;
+  isCustomMode: boolean;
   isPomodoro: boolean;
   pomodoroSettings: {
     focusTime: number;
@@ -46,7 +45,6 @@ export function FocusTimer({
   onRunningChange,
   onElapsedSeconds,
   isPomodoro = false,
-  variant = 'default',
   customMinutes: customMinutesProp = '25',
   pomodoroSettings: pomodoroSettingsProp = {
     focusTime: 25,
@@ -58,6 +56,7 @@ export function FocusTimer({
   const [isRunning, setIsRunning] = useState(false);
   const [mode, setMode] = useState<TimerMode>('focus');
   const [sessionsCompleted, setSessionsCompleted] = useState(0);
+  const [isCustomMode, setIsCustomMode] = useState(true);
   const [pomodoroConfig, setPomodoroConfig] = useState(pomodoroSettingsProp);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const lastPersistRef = useRef<number>(Date.now());
@@ -93,7 +92,7 @@ export function FocusTimer({
   };
 
   const getDuration = () => {
-    if (!isPomodoro) {
+    if (isCustomMode && isPomodoro === false) {
       return parseInt(customMinutesProp) * 60 || 25 * 60;
     }
     return mode === 'focus'
@@ -107,8 +106,6 @@ export function FocusTimer({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.code === 'Space') {
-        const tag = (e.target as HTMLElement).tagName;
-        if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target as HTMLElement).isContentEditable) return;
         e.preventDefault();
         setIsRunning((prev) => !prev);
       }
@@ -124,13 +121,7 @@ export function FocusTimer({
     const raw = localStorage.getItem(TIMER_STATE_KEY);
     if (!raw) return;
 
-    let snapshot: TimerSnapshot;
-    try {
-      snapshot = JSON.parse(raw) as TimerSnapshot;
-    } catch {
-      localStorage.removeItem(TIMER_STATE_KEY);
-      return;
-    }
+    const snapshot = JSON.parse(raw) as TimerSnapshot;
     const savedDuration = snapshot.isCustomMode && snapshot.isPomodoro === false
       ? (parseInt(snapshot.customMinutes || '25') || 25) * 60
       : snapshot.mode === 'focus'
@@ -147,7 +138,7 @@ export function FocusTimer({
 
     setMode(snapshot.mode || 'focus');
     setSessionsCompleted(snapshot.sessionsCompleted || 0);
-
+    setIsCustomMode(snapshot.isCustomMode ?? true);
     setPomodoroConfig(snapshot.pomodoroSettings || pomodoroConfig);
 
     if (adjustedTimeLeft === 0 && snapshot.isRunning) {
@@ -161,23 +152,22 @@ export function FocusTimer({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const persistState = (nextState?: Partial<TimerSnapshot>, force = false) => {
+  const persistState = (nextState?: Partial<TimerSnapshot>) => {
     if (typeof window === 'undefined') return;
-    const now = Date.now();
-    if (!force && now - lastPersistRef.current < 5000) return;
     const payload: TimerSnapshot = {
       timeLeft,
       isRunning,
       mode,
       sessionsCompleted,
       customMinutes: customMinutesProp,
+      isCustomMode,
       isPomodoro,
       pomodoroSettings: pomodoroConfig,
-      lastSaved: now,
+      lastSaved: Date.now(),
       ...nextState,
     };
     localStorage.setItem(TIMER_STATE_KEY, JSON.stringify(payload));
-    lastPersistRef.current = now;
+    lastPersistRef.current = Date.now();
   };
 
   useEffect(() => {
@@ -210,13 +200,13 @@ export function FocusTimer({
       // Calculate how many seconds passed since last recording
       const secondsElapsed = lastRecordedSecondRef.current - remaining;
       
-      // Record elapsed time for ALL modes (focus and breaks)
-      if (secondsElapsed > 0) {
+      // Record elapsed focus time (only whole seconds, only for focus mode)
+      if (secondsElapsed > 0 && modeRef.current === 'focus') {
         // Update local storage
-        localAddElapsedSeconds(modeRef.current, secondsElapsed);
+        localAddElapsedSeconds('focus', secondsElapsed);
         // Call Convex sync callback if provided
         if (onElapsedSeconds) {
-          onElapsedSeconds(modeRef.current === 'focus' ? 'focus' : 'break', secondsElapsed);
+          onElapsedSeconds('focus', secondsElapsed);
         }
         lastRecordedSecondRef.current = remaining;
       }
@@ -247,19 +237,6 @@ export function FocusTimer({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isRunning]);
 
-  const [countdown, setCountdown] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (countdown === null) return;
-    if (countdown <= 0) {
-      setIsRunning(true);
-      setCountdown(null);
-      return;
-    }
-    const timer = setInterval(() => setCountdown(prev => prev! - 1), 1000);
-    return () => clearInterval(timer);
-  }, [countdown]);
-
   const handleTimerComplete = (durationMinutes?: number) => {
     const sessionMinutes = durationMinutes || parseInt(customMinutesProp || '25');
 
@@ -273,27 +250,25 @@ export function FocusTimer({
 
     if (isPomodoro) {
       if (mode === 'focus') {
-        const nextSessionCount = sessionsCompleted + 1;
-        setSessionsCompleted(nextSessionCount);
-        const nextMode = nextSessionCount % 4 === 0 ? 'longBreak' : 'shortBreak';
+        setSessionsCompleted((prev) => prev + 1);
+        const nextMode = sessionsCompleted % 4 === 3 ? 'longBreak' : 'shortBreak';
         setMode(nextMode);
       } else {
         setMode('focus');
       }
-      setCountdown(3);
     }
-    persistState({ isRunning: false, timeLeft: getDuration() }, true);
+    persistState({ isRunning: false, timeLeft: getDuration() });
   };
 
   const handleToggleTimer = () => {
     setIsRunning(!isRunning);
-    persistState({ isRunning: !isRunning }, true);
+    persistState({ isRunning: !isRunning });
   };
 
   const handleReset = () => {
     setIsRunning(false);
     setTimeLeft(getDuration());
-    persistState({ isRunning: false, timeLeft: getDuration() }, true);
+    persistState({ isRunning: false, timeLeft: getDuration() });
   };
 
   const formatTime = (seconds: number) => {
@@ -331,17 +306,33 @@ export function FocusTimer({
       </div>
 
       {/* Main Timer Display */}
-      <div className={`relative mx-auto mb-4 ${variant === 'compact' ? 'w-40 h-40' : 'w-56 h-56 sm:w-72 sm:h-72'}`}>
+      <div className="relative w-56 h-56 sm:w-72 sm:h-72 mx-auto mb-4">
         {/* Outer glow circle */}
-        {variant !== 'compact' && <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${currentConfig.color} opacity-15 blur-xl`} />}
+        <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${currentConfig.color} opacity-15 blur-xl`} />
 
         {/* Progress ring container */}
-        {variant !== 'compact' && (
         <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 200 200">
           {/* Background circle */}
-          <circle cx="100" cy="100" r="90" fill="none" stroke="rgba(255, 255, 255, 0.1)" strokeWidth="8" />
+          <circle
+            cx="100"
+            cy="100"
+            r="90"
+            fill="none"
+            stroke="rgba(255, 255, 255, 0.1)"
+            strokeWidth="8"
+          />
           {/* Progress circle */}
-          <circle cx="100" cy="100" r="90" fill="none" stroke={`url(#gradient-${mode})`} strokeWidth="8" strokeDasharray={`${(progress / 100) * 565} 565`} strokeLinecap="round" className="transition-all duration-500" />
+          <circle
+            cx="100"
+            cy="100"
+            r="90"
+            fill="none"
+            stroke={`url(#gradient-${mode})`}
+            strokeWidth="8"
+            strokeDasharray={`${(progress / 100) * 565} 565`}
+            strokeLinecap="round"
+            className="transition-all duration-500"
+          />
           {/* Gradient definition */}
           <defs>
             <linearGradient id={`gradient-${mode}`} x1="0%" y1="0%" x2="100%" y2="100%">
@@ -350,57 +341,40 @@ export function FocusTimer({
             </linearGradient>
           </defs>
         </svg>
-        )}
 
         {/* Timer Display */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          {countdown !== null ? (
-            <div className="text-center">
-              <div className="text-sm font-medium text-white/70 mb-2">Starting in</div>
-              <div className="text-6xl font-bold text-white drop-shadow-lg">{countdown}</div>
+          <div className="text-center">
+            <div className={`${getTimerTextSize()} font-bold bg-gradient-to-br ${currentConfig.color} bg-clip-text text-transparent font-mono tracking-tight drop-shadow-lg ${isRunning ? 'breathe' : ''}`}>
+              {formatTime(timeLeft)}
             </div>
-          ) : (
-            <div className="text-center">
-              <div className={`${variant === 'compact' ? 'text-3xl' : getTimerTextSize()} font-bold bg-gradient-to-br ${currentConfig.color} bg-clip-text text-transparent font-mono tracking-tight drop-shadow-lg ${isRunning ? 'breathe' : ''}`}>
-                {formatTime(timeLeft)}
-              </div>
-              {isPomodoro && <p className="text-white/50 text-xs mt-1">Session {sessionsCompleted + 1}</p>}
-            </div>
-          )}
+            {isPomodoro && <p className="text-white/50 text-xs mt-1">Session {sessionsCompleted + 1}</p>}
+          </div>
         </div>
       </div>
 
       {/* Control Buttons - Always visible */}
       <div className="flex gap-3 justify-center">
-        {countdown !== null ? (
-          <button
-            onClick={() => setCountdown(0)}
-            className="px-6 py-2.5 rounded-full font-semibold text-sm transition-all border bg-white/15 hover:bg-white/25 border-white/20 text-white"
-          >
-            Skip Countdown
-          </button>
-        ) : (
-          <button
-            onClick={handleToggleTimer}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold text-sm transition-all border ${
-              isRunning
-                ? 'bg-red-500/20 hover:bg-red-500/30 border-red-400/40 text-white'
-                : 'bg-white/15 hover:bg-white/25 border-white/20 text-white'
-            }`}
-          >
-            {isRunning ? (
-              <>
-                <Pause size={16} />
-                <span>Pause</span>
-              </>
-            ) : (
-              <>
-                <Play size={16} />
-                <span>Start</span>
-              </>
-            )}
-          </button>
-        )}
+        <button
+          onClick={handleToggleTimer}
+          className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold text-sm transition-all border ${
+            isRunning
+              ? 'bg-red-500/20 hover:bg-red-500/30 border-red-400/40 text-white'
+              : 'bg-white/15 hover:bg-white/25 border-white/20 text-white'
+          }`}
+        >
+          {isRunning ? (
+            <>
+              <Pause size={16} />
+              <span>Pause</span>
+            </>
+          ) : (
+            <>
+              <Play size={16} />
+              <span>Start</span>
+            </>
+          )}
+        </button>
 
         <button
           onClick={handleReset}
