@@ -238,7 +238,7 @@ export function useConvexStats() {
       if (pendingSecondsRef.current > 0 && userIdentifier) {
         addToOfflineQueue({
           type: "addElapsedTime",
-          payload: { ...userIdentifier, mode: "focus", seconds: pendingSecondsRef.current: getClientDate() },
+          payload: { ...userIdentifier, mode: "focus", seconds: pendingSecondsRef.current },
         });
       }
     };
