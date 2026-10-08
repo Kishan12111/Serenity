@@ -7,10 +7,11 @@ import { ClockRing, SessionArc } from './clock-ring';
 interface DayViewProps {
   dateStr: string;
   sessions: SessionArc[];
-  onBack: () => void;
+  onBack?: () => void;
+  children?: React.ReactNode;
 }
 
-export function DayView({ dateStr, sessions, onBack }: DayViewProps) {
+export function DayView({ dateStr, sessions, onBack, children }: DayViewProps) {
   const [scrollHour, setScrollHour] = useState<number>(new Date().getHours());
   const [hoveredArc, setHoveredArc] = useState<SessionArc | null>(null);
   const [hoverPos, setHoverPos] = useState({ x: 0, y: 0 });
@@ -33,11 +34,13 @@ export function DayView({ dateStr, sessions, onBack }: DayViewProps) {
       <AnimeBackground timeOfDay={timeOfDay} />
       
       {/* Top Bar */}
-      <div className="absolute top-6 left-6 z-20">
-        <button onClick={onBack} className="text-white/70 hover:text-white flex items-center gap-2">
-          ← Back
-        </button>
-      </div>
+      {onBack && (
+        <div className="absolute top-6 left-6 z-20">
+          <button onClick={onBack} className="text-white/70 hover:text-white flex items-center gap-2">
+            ← Back
+          </button>
+        </div>
+      )}
       
       {/* Scroll control mock - normally handled by scroll event */}
       <div className="absolute left-6 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-2">
@@ -58,7 +61,9 @@ export function DayView({ dateStr, sessions, onBack }: DayViewProps) {
           faceHours={faceHours}
           onArcHover={(arc, x, y) => { setHoveredArc(arc); setHoverPos({x, y}); }}
           onArcClick={() => {}}
-        />
+        >
+          {children}
+        </ClockRing>
       </div>
 
       {/* Hover Tooltip */}

@@ -19,6 +19,7 @@ interface ClockRingProps {
   faceHours: 'am' | 'pm'; // am = 0–12, pm = 12–24
   onArcHover: (arc: SessionArc | null, x: number, y: number) => void;
   onArcClick: (arc: SessionArc) => void;
+  children?: React.ReactNode;
 }
 
 const SIZE = 200; // SVG viewBox size
@@ -65,7 +66,7 @@ function describeArc(startAngle: number, endAngle: number, r: number) {
   return `M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArc} 1 ${end.x} ${end.y}`;
 }
 
-export function ClockRing({ sessions, faceHours, onArcHover, onArcClick }: ClockRingProps) {
+export function ClockRing({ sessions, faceHours, onArcHover, onArcClick, children }: ClockRingProps) {
   const faceStart = faceHours === 'am' ? 0 : 12;
 
   const arcs = useMemo(() => sessions.map(session => {
@@ -98,11 +99,12 @@ export function ClockRing({ sessions, faceHours, onArcHover, onArcClick }: Clock
   const minHandEnd  = polarToXY(minAngle, 65);
 
   return (
-    <svg
-      viewBox={`0 0 ${SIZE} ${SIZE}`}
-      className="w-full h-full"
-      style={{ filter: 'drop-shadow(0 0 20px rgba(0,0,0,0.4))' }}
-    >
+    <div className="relative w-full aspect-square flex items-center justify-center">
+      <svg
+        viewBox={`0 0 ${SIZE} ${SIZE}`}
+        className="w-full h-full absolute inset-0 pointer-events-auto"
+        style={{ filter: 'drop-shadow(0 0 20px rgba(0,0,0,0.4))' }}
+      >
       <defs>
         {/* Frosted glass inner circle */}
         <filter id="blur-bg" x="-10%" y="-10%" width="120%" height="120%">
@@ -189,5 +191,13 @@ export function ClockRing({ sessions, faceHours, onArcHover, onArcClick }: Clock
       {/* Center cap */}
       <circle cx={CX} cy={CY} r={4} fill="rgba(240,237,232,0.8)" />
     </svg>
+    {children && (
+      <div className="absolute inset-0 flex items-center justify-center p-[20%] pointer-events-auto z-10">
+        <div className="w-full h-full rounded-full flex items-center justify-center bg-black/40 backdrop-blur-md shadow-2xl border border-white/10">
+          {children}
+        </div>
+      </div>
+    )}
+    </div>
   );
 }

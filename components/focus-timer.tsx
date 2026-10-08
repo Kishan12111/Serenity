@@ -11,6 +11,7 @@ interface FocusTimerProps {
   onRunningChange?: (running: boolean) => void;
   onElapsedSeconds?: (mode: string, seconds: number) => void;
   isPomodoro?: boolean;
+  variant?: 'default' | 'compact';
   customMinutes?: string;
   pomodoroSettings?: {
     focusTime: number;
@@ -45,6 +46,7 @@ export function FocusTimer({
   onRunningChange,
   onElapsedSeconds,
   isPomodoro = false,
+  variant = 'default',
   customMinutes: customMinutesProp = '25',
   pomodoroSettings: pomodoroSettingsProp = {
     focusTime: 25,
@@ -329,33 +331,17 @@ export function FocusTimer({
       </div>
 
       {/* Main Timer Display */}
-      <div className="relative w-56 h-56 sm:w-72 sm:h-72 mx-auto mb-4">
+      <div className={`relative mx-auto mb-4 ${variant === 'compact' ? 'w-40 h-40' : 'w-56 h-56 sm:w-72 sm:h-72'}`}>
         {/* Outer glow circle */}
-        <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${currentConfig.color} opacity-15 blur-xl`} />
+        {variant !== 'compact' && <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${currentConfig.color} opacity-15 blur-xl`} />}
 
         {/* Progress ring container */}
+        {variant !== 'compact' && (
         <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 200 200">
           {/* Background circle */}
-          <circle
-            cx="100"
-            cy="100"
-            r="90"
-            fill="none"
-            stroke="rgba(255, 255, 255, 0.1)"
-            strokeWidth="8"
-          />
+          <circle cx="100" cy="100" r="90" fill="none" stroke="rgba(255, 255, 255, 0.1)" strokeWidth="8" />
           {/* Progress circle */}
-          <circle
-            cx="100"
-            cy="100"
-            r="90"
-            fill="none"
-            stroke={`url(#gradient-${mode})`}
-            strokeWidth="8"
-            strokeDasharray={`${(progress / 100) * 565} 565`}
-            strokeLinecap="round"
-            className="transition-all duration-500"
-          />
+          <circle cx="100" cy="100" r="90" fill="none" stroke={`url(#gradient-${mode})`} strokeWidth="8" strokeDasharray={`${(progress / 100) * 565} 565`} strokeLinecap="round" className="transition-all duration-500" />
           {/* Gradient definition */}
           <defs>
             <linearGradient id={`gradient-${mode}`} x1="0%" y1="0%" x2="100%" y2="100%">
@@ -364,6 +350,7 @@ export function FocusTimer({
             </linearGradient>
           </defs>
         </svg>
+        )}
 
         {/* Timer Display */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -374,7 +361,7 @@ export function FocusTimer({
             </div>
           ) : (
             <div className="text-center">
-              <div className={`${getTimerTextSize()} font-bold bg-gradient-to-br ${currentConfig.color} bg-clip-text text-transparent font-mono tracking-tight drop-shadow-lg ${isRunning ? 'breathe' : ''}`}>
+              <div className={`${variant === 'compact' ? 'text-3xl' : getTimerTextSize()} font-bold bg-gradient-to-br ${currentConfig.color} bg-clip-text text-transparent font-mono tracking-tight drop-shadow-lg ${isRunning ? 'breathe' : ''}`}>
                 {formatTime(timeLeft)}
               </div>
               {isPomodoro && <p className="text-white/50 text-xs mt-1">Session {sessionsCompleted + 1}</p>}

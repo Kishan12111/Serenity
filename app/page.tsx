@@ -468,10 +468,45 @@ export default function Home() {
         {/* Main content */}
         <main className="flex-1 flex items-center justify-center overflow-hidden p-4">
           {currentPage === 'focus' && (
-            <div className="w-full h-full max-w-5xl mx-auto flex flex-col lg:flex-row items-center justify-center gap-6">
+            <div className="w-full h-full absolute inset-0 z-0 bg-black">
+              <DayView 
+                dateStr={new Date().toISOString().split('T')[0]} 
+                sessions={(user?.recentSessions || []).filter(s => {
+                  const d = new Date(s.startedAt);
+                  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}` === new Date().toISOString().split('T')[0];
+                }).map((s, i) => {
+                  const start = new Date(s.startedAt);
+                  const end = new Date(s.endedAt);
+                  return {
+                    startHour: start.getHours(),
+                    startMinute: start.getMinutes(),
+                    endHour: end.getHours(),
+                    endMinute: end.getMinutes(),
+                    label: s.label,
+                    labelCategory: s.labelCategory,
+                    durationMinutes: s.durationMinutes,
+                    mode: s.mode,
+                    sessionIndex: i
+                  };
+                })}
+              >
+                <FocusTimer
+                  onSessionComplete={handleSessionComplete}
+                  onNotification={handleNotification}
+                  onElapsedSeconds={handleElapsedSeconds}
+                  isPomodoro={isPomodoro}
+                  customMinutes={customMinutes}
+                  pomodoroSettings={pomodoroSettings}
+                  onRunningChange={setIsRunning}
+                  variant="compact"
+                />
+              </DayView>
+
+              {/* Overlays on top of DayView */}
+              <div className="absolute inset-0 pointer-events-none z-20 flex items-center justify-between px-12">
               {/* Left side: Timer settings (when not running) */}
               {!isRunning && (
-                <div className="lg:w-64 w-full max-w-sm order-2 lg:order-1 shrink-0">
+                <div className="lg:w-64 w-full max-w-sm order-2 lg:order-1 shrink-0 pointer-events-auto">
                   {/* Streak indicator */}
                   <div className="flex justify-center mb-4">
                     <StreakIndicator variant="compact" />
@@ -541,22 +576,9 @@ export default function Home() {
                 </div>
               )}
 
-              {/* Center: Timer */}
-              <div className="order-1 lg:order-2 flex-1 flex items-center justify-center">
-                <FocusTimer
-                  onSessionComplete={handleSessionComplete}
-                  onNotification={handleNotification}
-                  onElapsedSeconds={handleElapsedSeconds}
-                  isPomodoro={isPomodoro}
-                  customMinutes={customMinutes}
-                  pomodoroSettings={pomodoroSettings}
-                  onRunningChange={setIsRunning}
-                />
-              </div>
-
               {/* Right side: Today stats & quote (when not running) */}
               {!isRunning && (
-                <div className="lg:w-64 w-full max-w-sm order-3 shrink-0">
+                <div className="lg:w-64 w-full max-w-sm order-3 shrink-0 pointer-events-auto">
                   <div className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4 space-y-3">
                     <div className="flex items-center gap-2">
                       <Clock className="h-4 w-4 text-white/60" />
@@ -571,6 +593,7 @@ export default function Home() {
                   </div>
                 </div>
               )}
+              </div>
             </div>
           )}
 
